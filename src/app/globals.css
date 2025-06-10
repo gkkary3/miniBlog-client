@@ -24,3 +24,130 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 마크다운 에디터 스타일 */
+.w-md-editor {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 12px !important;
+}
+
+.w-md-editor.w-md-editor-focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.w-md-editor-text-area > .w-md-editor-text-input,
+.w-md-editor-text-area > .w-md-editor-text {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: #f3f4f6 !important;
+  border: none !important;
+}
+
+.w-md-editor-text-area .w-md-editor-text-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* 툴바 스타일 */
+.w-md-editor-toolbar {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+  border-bottom: 1px solid #4b5563 !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.w-md-editor-toolbar button {
+  color: #f3f4f6 !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.w-md-editor-toolbar button:hover {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+/* 미리보기 영역 스타일 */
+.w-md-editor-preview {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: #f3f4f6 !important;
+}
+
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3,
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6 {
+  color: #60a5fa !important;
+}
+
+.w-md-editor-preview code {
+  background-color: rgba(55, 65, 81, 0.8) !important;
+  color: #fbbf24 !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+}
+
+.w-md-editor-preview pre {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+}
+
+.w-md-editor-preview blockquote {
+  border-left: 4px solid #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #f3f4f6 !important;
+}
+
+.w-md-editor-preview a {
+  color: #60a5fa !important;
+}
+
+.w-md-editor-preview a:hover {
+  color: #93c5fd !important;
+}
+
+/* 마크다운 뷰어 스타일 */
+.w-md-editor-preview {
+  background-color: transparent !important;
+  color: #f3f4f6 !important;
+  padding: 20px;
+}
+
+.w-md-editor-preview h1,
+.w-md-editor-preview h2,
+.w-md-editor-preview h3 {
+  color: #60a5fa !important;
+  border-bottom: 1px solid #374151;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.w-md-editor-preview img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  margin: 16px 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.w-md-editor-preview p {
+  line-height: 1.6 !important;
+  margin-bottom: 16px !important;
+}
+
+.w-md-editor-preview code {
+  background-color: rgba(55, 65, 81, 0.8) !important;
+  color: #fbbf24 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+}
+
+.w-md-editor-preview pre {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+  border: 1px solid #4b5563 !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  overflow-x: auto !important;
+}

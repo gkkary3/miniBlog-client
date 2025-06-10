@@ -30,4 +30,5 @@ export interface CreatePostRequest {
   title: string;
   content: string;
   categories: string[];
+  images: string[];
 }

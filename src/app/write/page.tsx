@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
+import MDEditor from "@uiw/react-md-editor";
 
 export default function WritePage() {
   // 🆕 URL 파라미터에서 게시글 ID 가져오기
@@ -15,6 +16,7 @@ export default function WritePage() {
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryInput, setCategoryInput] = useState("");
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); // 🆕 페이지 로딩 상태
 
@@ -48,14 +50,11 @@ export default function WritePage() {
     setLoading(true);
     try {
       // 🔍 현재 로그인한 사용자의 게시글만 수정 가능하도록 user.userId 사용
-      const response = await fetch(
-        `http://localhost:4000/posts/@${user?.userId}/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
-          },
-        }
-      );
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(
+          `http://localhost:4000/posts/@${user?.userId}/${id}`
+        );
 
       if (!response.ok) {
         throw new Error("게시글을 불러올 수 없습니다.");
@@ -71,6 +70,11 @@ export default function WritePage() {
           (category: { id: number; name: string }) => category.name
         ) || []
       );
+
+      // 🆕 기존 이미지들도 로드 (이 부분 추가)
+      if (post.images && Array.isArray(post.images)) {
+        setUploadedImages(post.images);
+      }
     } catch (error) {
       setError("게시글을 불러오는데 실패했습니다.");
       console.error("게시글 로드 에러:", error);
@@ -79,6 +83,35 @@ export default function WritePage() {
     }
   };
 
+  // 🆕 이미지 업로드 함수
+  const uploadImage = async (file: File): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch("http://localhost:4000/upload/image", {
+          method: "POST",
+          body: formData,
+        });
+
+      if (!response.ok) {
+        throw new Error("이미지 업로드 실패");
+      }
+
+      const data = await response.json();
+      const imageUrl = data.imageUrl;
+
+      // 🆕 업로드된 이미지를 배열에 추가
+      setUploadedImages((prev) => [...prev, imageUrl]);
+
+      return imageUrl;
+    } catch (error) {
+      console.error("이미지 업로드 에러:", error);
+      throw error;
+    }
+  };
   // 🏷️ 카테고리 입력 처리 (기존과 동일)
   const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && categoryInput.trim()) {
@@ -112,16 +145,17 @@ export default function WritePage() {
       return;
     }
 
-    if (categories.length === 0) {
-      setError("최소 1개의 카테고리를 입력해주세요.");
-      return;
-    }
+    // if (categories.length === 0) {
+    //   setError("최소 1개의 카테고리를 입력해주세요.");
+    //   return;
+    // }
 
     try {
       const postData = {
         title: title.trim(),
         content: content.trim(),
         categories: categories,
+        images: uploadedImages,
       };
 
       if (isEditMode && postId) {
@@ -279,15 +313,105 @@ export default function WritePage() {
             </div>
 
             <div className="relative">
-              <textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="당신의 이야기를 자유롭게 펼쳐보세요...&#10;&#10;• 마크다운 문법을 사용할 수 있습니다&#10;• 코드 블록, 링크, 이미지 등을 포함해보세요&#10;• 독자들에게 도움이 되는 내용을 작성해주세요"
-                rows={20}
-                className="w-full px-6 py-4 bg-black/20 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none leading-relaxed"
-                style={{ fontSize: "16px", lineHeight: "1.6" }}
-              />
+              <div className="w-full" data-color-mode="dark">
+                <MDEditor
+                  value={content}
+                  onChange={(val) => setContent(val || "")}
+                  preview="edit"
+                  height={500}
+                  visibleDragbar={false}
+                  textareaProps={{
+                    placeholder:
+                      "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
+                    style: {
+                      fontSize: 16,
+                      lineHeight: "1.6",
+                      color: "#f3f4f6",
+                      backgroundColor: "rgba(0, 0, 0, 0.2)",
+                      border: "1px solid #4b5563",
+                      borderRadius: "12px",
+                    },
+                  }}
+                  extraCommands={[
+                    // 커스텀 이미지 업로드 명령어만 추가
+                    {
+                      name: "image-upload",
+                      keyCommand: "image-upload",
+                      buttonProps: {
+                        "aria-label": "이미지 업로드",
+                        title: "이미지 업로드 (최대 5MB)",
+                      },
+                      icon: (
+                        <div
+                          style={{
+                            fontSize: "16px",
+                            display: "flex",
+                            alignItems: "center",
+                            color: "#f3f4f6",
+                          }}
+                        >
+                          🖼️
+                        </div>
+                      ),
+                      execute: async (state: any, api: any) => {
+                        // 파일 선택 input 생성
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept =
+                          "image/jpeg,image/jpg,image/png,image/gif,image/webp";
+                        input.multiple = false;
+
+                        input.onchange = async (e) => {
+                          const file = (e.target as HTMLInputElement)
+                            .files?.[0];
+                          if (file) {
+                            try {
+                              // 이미지 크기 제한 (5MB)
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert("이미지 크기는 5MB 이하여야 합니다.");
+                                return;
+                              }
+
+                              // 로딩 표시
+                              const loadingText = `![업로드 중...](uploading-${Date.now()})`;
+                              api.replaceSelection(loadingText);
+
+                              // 이미지 업로드
+                              const imageUrl = await uploadImage(file);
+
+                              // 마크다운 이미지 문법으로 교체
+                              const imageMarkdown = `![${file.name}](${imageUrl})`;
+
+                              // 현재 content에서 로딩 텍스트를 찾아서 교체
+                              setContent((prev) =>
+                                prev.replace(loadingText, imageMarkdown)
+                              );
+
+                              console.log("이미지 업로드 성공:", imageUrl);
+                            } catch (error) {
+                              console.error("이미지 업로드 실패:", error);
+
+                              // 로딩 텍스트 제거 (패턴으로 찾기)
+                              setContent((prev) => {
+                                const loadingPattern =
+                                  /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
+                                return prev.replace(loadingPattern, "");
+                              });
+
+                              alert(
+                                "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
+                              );
+                            }
+                          }
+                        };
+
+                        // 파일 선택 창 열기
+                        input.click();
+                      },
+                    },
+                  ]}
+                />
+              </div>
 
               <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg">
                 <span className="text-gray-400 text-sm flex items-center">

@@ -7,6 +7,7 @@ import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
+import MDEditor from "@uiw/react-md-editor";
 
 export default function PostDetailPage({
   params,
@@ -19,7 +20,7 @@ export default function PostDetailPage({
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const { accessToken, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
   // 게시글 데이터 fetch
@@ -66,19 +67,20 @@ export default function PostDetailPage({
     if (!currentUserId || !post) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`, // JWT 토큰 포함
-          },
-          body: JSON.stringify({
-            id: post.id,
-          }),
-        }
-      );
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(
+          `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: post.id,
+            }),
+          }
+        );
 
       if (!response.ok) throw new Error("Failed to like post");
 
@@ -101,19 +103,20 @@ export default function PostDetailPage({
     if (!currentUserId || !post) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`, // JWT 토큰 포함
-          },
-          body: JSON.stringify({
-            id: post.id,
-          }),
-        }
-      );
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(
+          `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: post.id,
+            }),
+          }
+        );
 
       if (!response.ok) throw new Error("Failed to unlike post");
 
@@ -135,16 +138,17 @@ export default function PostDetailPage({
     if (!currentUserId || !post) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/posts/@${resolvedParams.userId}/${postId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(
+          `http://localhost:4000/posts/@${resolvedParams.userId}/${postId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
       if (!response.ok) throw new Error("Failed to delete post");
       alert("게시글이 삭제되었습니다.");
@@ -257,10 +261,8 @@ export default function PostDetailPage({
               </div>
             )}
           </div>
-
           {/* 게시글 제목 */}
           <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
-
           {/* 좋아요 버튼 - 간단하게 */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
             <button
@@ -275,11 +277,26 @@ export default function PostDetailPage({
               <span>{post.likedUsers.length}</span>
             </button>
           </div>
-
           {/* 게시글 내용 */}
-          <div className="prose prose-invert max-w-none">
+          {/* <div className="prose prose-invert max-w-none">
             <div className="text-gray-300 leading-relaxed whitespace-pre-wrap text-lg">
               {post.content}
+            </div>
+          </div> */}
+          {/* // 🆕 마크다운 렌더링 */}
+          <div className="prose prose-invert max-w-none">
+            <div className="w-full" data-color-mode="dark">
+              <MDEditor.Markdown
+                source={post.content}
+                style={{
+                  backgroundColor: "transparent",
+                  color: "#f3f4f6",
+                  padding: "20px",
+                  borderRadius: "12px",
+                  border: "1px solid #374151",
+                  minHeight: "200px",
+                }}
+              />
             </div>
           </div>
         </article>
