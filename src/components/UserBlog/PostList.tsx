@@ -7,16 +7,24 @@ interface PostListProps {
   posts: UserPost[];
   userId: string;
   selectedCategory: string | null;
+  loading?: boolean;
+  hasMore?: boolean;
+  searchQuery?: string;
+  lastElementRef?: (node: HTMLElement | null) => void;
 }
 
 export default function PostList({
   posts,
   userId,
   selectedCategory,
+  loading = false,
+  hasMore = false,
+  searchQuery = "",
+  lastElementRef,
 }: PostListProps) {
   const router = useRouter();
 
-  // 선택된 카테고리에 따라 게시물 필터링
+  // 선택된 카테고리에 따라 게시물 필터링 (카테고리가 선택된 경우에만)
   const filteredPosts = selectedCategory
     ? posts.filter((post) =>
         post.categories.some((cat) => cat.name === selectedCategory)
@@ -27,11 +35,13 @@ export default function PostList({
     router.push(`/posts/${userId}/${postId}`);
   };
 
-  if (filteredPosts.length === 0) {
+  if (filteredPosts.length === 0 && !loading) {
     return (
       <div className="text-center py-16">
         <p className="text-gray-400 text-lg">
-          {selectedCategory
+          {searchQuery
+            ? `"${searchQuery}" 검색 결과가 없습니다.`
+            : selectedCategory
             ? `"${selectedCategory}" 카테고리에 게시물이 없습니다.`
             : "게시물이 없습니다."}
         </p>
@@ -41,8 +51,20 @@ export default function PostList({
 
   return (
     <div className="space-y-6">
-      {/* 필터링 결과 표시 */}
-      {selectedCategory && (
+      {/* 필터링/검색 결과 표시 */}
+      {searchQuery && (
+        <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4">
+          <p className="text-blue-300">
+            <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>{" "}
+            검색 결과
+            <span className="ml-2 text-blue-400">
+              ({filteredPosts.length}개)
+            </span>
+          </p>
+        </div>
+      )}
+
+      {selectedCategory && !searchQuery && (
         <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4">
           <p className="text-blue-300">
             <span className="font-semibold">#{selectedCategory}</span> 카테고리
@@ -53,9 +75,10 @@ export default function PostList({
         </div>
       )}
 
-      {filteredPosts.map((post) => (
+      {filteredPosts.map((post, index) => (
         <article
           key={post.id}
+          ref={index === filteredPosts.length - 1 ? lastElementRef : null}
           onClick={() => handlePostClick(post.id)}
           className="bg-black/40 rounded-lg p-6 hover:bg-black/30 transition-colors cursor-pointer group"
         >
@@ -107,6 +130,25 @@ export default function PostList({
           </div>
         </article>
       ))}
+
+      {/* 로딩 인디케이터 */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
+          <p className="text-gray-400 text-sm">게시글을 불러오는 중...</p>
+        </div>
+      )}
+
+      {/* 더 이상 로드할 항목이 없을 때 */}
+      {!hasMore && filteredPosts.length > 0 && !loading && (
+        <div className="text-center py-8">
+          <div className="inline-flex items-center space-x-2 text-gray-400">
+            <span>🎉</span>
+            <span>모든 게시글을 확인했습니다</span>
+            <span>🎉</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

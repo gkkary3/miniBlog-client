@@ -65,3 +65,38 @@ export interface UserBlogData {
   totalPosts: number;
   totalCategories: number;
 }
+
+// 검색 API 응답용 게시글 타입
+export interface SearchPost {
+  id: number;
+  title: string;
+  content: string;
+  images: string | null;
+  userId: number;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    userId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  likedUsers: {
+    id: number;
+    userId: string;
+  }[];
+  categories: Category[];
+  comments: Comment[];
+}
+
+// 검색 API 응답 타입
+export interface SearchResponse {
+  posts: SearchPost[];
+  total: number;
+  page: string;
+  limit: string;
+  totalPages: number;
+}

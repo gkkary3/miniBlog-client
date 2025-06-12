@@ -1,6 +1,72 @@
 import { UserPost, UserBlogData, CategoryStats } from "@/types/post";
 
-// 타입 정의 부분 삭제하고 import 사용
+// 📝 새로운 페이지네이션 API용 타입들
+export interface GetUserPostsParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface UserPostsResponse {
+  posts: UserPost[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  searchTerm: string | null;
+}
+
+// 🔍 사용자 블로그 게시글 조회 (페이지네이션 + 검색 지원)
+export const fetchUserPostsPaginated = async (
+  userId: string,
+  params?: GetUserPostsParams
+): Promise<UserPostsResponse> => {
+  console.log(`🔍 사용자 블로그 게시글 조회 시작: /posts/@${userId}`, params);
+
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (params?.search) queryParams.append("search", params.search);
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+
+    const url = `http://localhost:4000/posts/@${userId}${
+      queryParams.toString() ? "?" + queryParams.toString() : ""
+    }`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: UserPostsResponse = await response.json();
+
+    console.log(`📝 사용자 게시물 조회 완료:`, {
+      사용자: userId,
+      페이지: data.page,
+      한페이지당: data.limit,
+      전체개수: data.total,
+      전체페이지: data.totalPages,
+      검색어: data.searchTerm,
+      조회된게시물: data.posts.length,
+    });
+
+    return data;
+  } catch (error) {
+    console.error(`❌ 사용자 블로그 게시글 조회 실패 (@${userId}):`, error);
+    throw new Error(
+      error instanceof Error
+        ? `사용자 블로그 게시글 조회 실패: ${error.message}`
+        : "사용자 블로그 게시글 조회 중 알 수 없는 오류가 발생했습니다."
+    );
+  }
+};
 
 // 🔍 사용자 블로그 데이터 조회 함수
 export const fetchUserBlog = async (userId: string): Promise<UserBlogData> => {
@@ -19,7 +85,8 @@ export const fetchUserBlog = async (userId: string): Promise<UserBlogData> => {
     }
 
     // 📊 서버에서 게시물 배열 받기
-    const posts: UserPost[] = await response.json();
+    const data: UserPostsResponse = await response.json();
+    const posts = data.posts;
     console.log(`📝 게시물 ${posts.length}개 조회 완료`);
 
     // 🏷️ 카테고리별 게시물 수 계산

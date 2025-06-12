@@ -10,14 +10,14 @@ export default function AuthInitializer() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // 🚀 앱 시작 시 토큰 상태 초기화
+    // 앱 시작 시 토큰 상태 초기화
     const initAuth = async () => {
       try {
         await initializeAuth();
       } catch (error) {
         console.error("인증 초기화 실패:", error);
 
-        // 🚪 토큰이 완전히 만료된 경우 로그인 페이지로 이동
+        // 토큰이 완전히 만료된 경우 로그인 페이지로 이동
         // 단, 이미 로그인/회원가입 페이지에 있거나 홈페이지에 있으면 리다이렉트하지 않음
         const publicPages = ["/login", "/register", "/posts"];
         const isPublicPage =

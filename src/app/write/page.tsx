@@ -6,12 +6,12 @@ import { useAuthStore } from "../../stores/authStore";
 import MDEditor from "@uiw/react-md-editor";
 
 export default function WritePage() {
-  // 🆕 URL 파라미터에서 게시글 ID 가져오기
+  // URL 파라미터에서 게시글 ID 가져오기
   const searchParams = useSearchParams();
   const postId = searchParams.get("id"); // ?id=2 에서 '2' 추출
   const isEditMode = !!postId; // id가 있으면 수정 모드
 
-  // 📝 입력 상태 관리
+  // 입력 상태 관리
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
