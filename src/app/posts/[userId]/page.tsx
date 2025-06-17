@@ -5,6 +5,7 @@ import { useUserCategories } from "@/hooks/useUserBlog";
 import { useUserBlogInfinite } from "@/hooks/useUserBlogInfinite";
 import CategorySidebar from "@/components/UserBlog/CategorySidebar";
 import PostList from "@/components/UserBlog/PostList";
+import FollowListModal from "@/components/UserBlog/FollowListModal";
 
 interface UserBlogPageProps {
   params: Promise<{ userId: string }>;
@@ -15,6 +16,10 @@ export default function UserBlogPage({ params }: UserBlogPageProps) {
 
   // 선택된 카테고리 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const [followModal, setFollowModal] = useState<
+    null | "followers" | "following"
+  >(null);
 
   // 검색 input ref (포커스 유지를 위함)
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +33,8 @@ export default function UserBlogPage({ params }: UserBlogPageProps) {
     searchInput,
     searchQuery,
     total,
+    followerCount,
+    followingCount,
     setSearchInput,
     lastElementRef,
   } = useUserBlogInfinite(userId, 10);
@@ -132,9 +139,25 @@ export default function UserBlogPage({ params }: UserBlogPageProps) {
         {/* 헤더 */}
         <div className="mb-8">
           <div className="flex justify-between items-start mb-4">
-            <h1 className="text-4xl font-bold">
-              {userInfo?.username || userId}님의 블로그
-            </h1>
+            <div>
+              <h1 className="text-4xl font-bold">
+                {userInfo?.username || userId}님의 블로그
+              </h1>
+              <div className="flex gap-4 text-gray-400 mt-1 text-base">
+                <span
+                  className="cursor-pointer hover:underline"
+                  onClick={() => setFollowModal("followers")}
+                >
+                  팔로워 {followerCount}명
+                </span>
+                <span
+                  className="cursor-pointer hover:underline"
+                  onClick={() => setFollowModal("following")}
+                >
+                  팔로잉 {followingCount}명
+                </span>
+              </div>
+            </div>
 
             {/* 검색 UI - 포스트 상단 오른쪽 */}
             <div className="w-64">
@@ -193,6 +216,14 @@ export default function UserBlogPage({ params }: UserBlogPageProps) {
             />
           </main>
         </div>
+
+        {followModal && (
+          <FollowListModal
+            userId={userId}
+            type={followModal}
+            onClose={() => setFollowModal(null)}
+          />
+        )}
       </div>
     </div>
   );

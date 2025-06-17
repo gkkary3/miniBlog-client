@@ -5,7 +5,7 @@ import {
 } from "@/types/comment";
 
 // 🔑 토큰 가져오기 헬퍼 (작성/수정/삭제용)
-const getAuthToken = () => {
+export const getAuthToken = () => {
   if (typeof window === "undefined") return null;
   const authData = localStorage.getItem("auth-storage");
   if (!authData) return null;

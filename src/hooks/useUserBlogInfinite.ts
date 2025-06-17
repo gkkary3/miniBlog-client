@@ -15,6 +15,8 @@ interface UseUserBlogInfiniteResult {
   searchQuery: string;
   total: number;
   totalPages: number;
+  followerCount: number;
+  followingCount: number;
   setSearchInput: (input: string) => void;
   resetSearch: () => void;
   lastElementRef: (node: HTMLElement | null) => void;
@@ -33,6 +35,8 @@ export function useUserBlogInfinite(
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const isInitialMount = useRef(true);
@@ -80,6 +84,8 @@ export function useUserBlogInfinite(
         setTotal(data.total);
         setTotalPages(data.totalPages);
         setHasMore(pageNum < data.totalPages);
+        setFollowerCount(data.followerCount);
+        setFollowingCount(data.followingCount);
       } catch (err) {
         console.error(`❌ fetchPosts 실패:`, err);
         setError(
@@ -175,6 +181,8 @@ export function useUserBlogInfinite(
     searchQuery,
     total,
     totalPages,
+    followerCount,
+    followingCount,
     setSearchInput,
     resetSearch,
     lastElementRef,

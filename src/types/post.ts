@@ -64,6 +64,8 @@ export interface UserBlogData {
   categories: CategoryStats[];
   totalPosts: number;
   totalCategories: number;
+  followerCount: number;
+  followingCount: number;
 }
 
 // 검색 API 응답용 게시글 타입

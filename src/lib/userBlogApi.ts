@@ -14,6 +14,8 @@ export interface UserPostsResponse {
   limit: number;
   totalPages: number;
   searchTerm: string | null;
+  followerCount: number;
+  followingCount: number;
 }
 
 // 🔍 사용자 블로그 게시글 조회 (페이지네이션 + 검색 지원)
@@ -55,6 +57,8 @@ export const fetchUserPostsPaginated = async (
       전체페이지: data.totalPages,
       검색어: data.searchTerm,
       조회된게시물: data.posts.length,
+      followers: data.followerCount,
+      following: data.followingCount,
     });
 
     return data;
@@ -122,6 +126,8 @@ export const fetchUserBlog = async (userId: string): Promise<UserBlogData> => {
       categories,
       totalPosts: posts.length,
       totalCategories: categories.length,
+      followerCount: data.followerCount,
+      followingCount: data.followingCount,
     };
 
     console.log(`✅ 사용자 블로그 데이터 처리 완료:`, {
