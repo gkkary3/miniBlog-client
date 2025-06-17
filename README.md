@@ -1,4 +1,4 @@
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/8992f661-a347-4e87-9ee2-37bb5bf59243)
 
 
 ## 추가 기능
