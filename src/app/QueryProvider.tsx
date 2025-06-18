@@ -10,19 +10,7 @@ interface QueryProviderProps {
 
 export default function QueryProvider({ children }: QueryProviderProps) {
   // 🏪 QueryClient 생성 (클라이언트에서만 실행)
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000, // 1분 동안 fresh
-            gcTime: 10 * 60 * 1000, // 10분 동안 캐시 유지
-            retry: 1, // 실패 시 1번만 재시도
-            refetchOnWindowFocus: false, // 창 포커스 시 재요청 비활성화
-          },
-        },
-      })
-  );
+  const [queryClient] = useState(() => new QueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>
