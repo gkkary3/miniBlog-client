@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "@uiw/react-md-editor/markdown-editor.css";
-import "@uiw/react-markdown-preview/markdown.css";
+import "@uiw/react-md-editor/dist/markdown-editor.css";
+import "@uiw/react-markdown-preview/dist/markdown.css";
 import Header from "@/components/Header";
 import QueryProvider from "./QueryProvider";
 import AuthInitializer from "@/components/AuthInitializer";

@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import type { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
 import Link from "next/link";
 
+// MDEditor를 동적으로 로드
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
   {
@@ -21,6 +22,60 @@ const MDEditor = dynamic(
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+interface PostData {
+  title: string;
+  content: string;
+  categories: string[];
+  images: string[];
+}
+
+// 로딩 컴포넌트
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="animate-pulse space-y-8">
+        <div className="h-12 bg-gray-800 rounded-xl w-1/3"></div>
+        <div className="h-64 bg-gray-800 rounded-xl"></div>
+        <div className="h-96 bg-gray-800 rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// 에러 컴포넌트
+const ErrorFallback = ({
+  error,
+  onBack,
+}: {
+  error: string;
+  onBack: () => void;
+}) => (
+  <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
+        <div className="flex items-center mb-4">
+          <span className="text-red-400 mr-3 text-xl">⚠️</span>
+          <h1 className="text-xl font-bold text-red-400">{error}</h1>
+        </div>
+        <div className="space-y-4">
+          <button
+            onClick={onBack}
+            className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
+          >
+            ← 이전 페이지로 돌아가기
+          </button>
+          <Link
+            href="/posts"
+            className="block text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
+          >
+            📝 전체 게시글 목록으로 이동
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const WritePageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,13 +89,12 @@ const WritePageContent = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  interface PostData {
-    title: string;
-    content: string;
-    categories: string[];
-    images: string[];
-  }
+  // 클라이언트 사이드 마운트 체크
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // 로그인 체크
   useEffect(() => {
@@ -113,49 +167,14 @@ const WritePageContent = () => {
     }
   };
 
-  // 초기 로딩 중일 때
-  if (initialLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-gray-800 rounded-xl w-1/3"></div>
-            <div className="h-64 bg-gray-800 rounded-xl"></div>
-            <div className="h-96 bg-gray-800 rounded-xl"></div>
-          </div>
-        </div>
-      </div>
-    );
+  // 초기 로딩 중이거나 마운트되지 않은 경우
+  if (initialLoading || !isMounted) {
+    return <LoadingFallback />;
   }
 
   // 에러 발생 시
   if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
-            <div className="flex items-center mb-4">
-              <span className="text-red-400 mr-3 text-xl">⚠️</span>
-              <h1 className="text-xl font-bold text-red-400">{error}</h1>
-            </div>
-            <div className="space-y-4">
-              <button
-                onClick={() => router.back()}
-                className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
-              >
-                ← 이전 페이지로 돌아가기
-              </button>
-              <Link
-                href="/posts"
-                className="block text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
-              >
-                📝 전체 게시글 목록으로 이동
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorFallback error={error} onBack={() => router.back()} />;
   }
 
   // 🏷️ 카테고리 입력 처리 (기존과 동일)
