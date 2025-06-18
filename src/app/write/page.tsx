@@ -69,6 +69,7 @@ const WritePageContent = () => {
         setUploadedImages(post.images);
       }
     } catch (error) {
+      console.error("게시글 불러오기 에러:", error);
       setError("게시글을 불러오는데 실패했습니다.");
     } finally {
       setLoading(false);
@@ -384,6 +385,7 @@ const WritePageContent = () => {
                               );
                             } catch (error) {
                               // 로딩 텍스트 제거 (패턴으로 찾기)
+                              console.log("error", error);
                               setContent((prev) => {
                                 const loadingPattern =
                                   /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
