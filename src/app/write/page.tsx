@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
 import dynamic from "next/dynamic";
 import type { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
+import Link from "next/link";
 
 const MDEditor = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default),
@@ -21,76 +22,201 @@ const MDEditor = dynamic(
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const WritePageContent = () => {
-  // URL 파라미터에서 게시글 ID 가져오기
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const postId = searchParams.get("id"); // ?id=2 에서 '2' 추출
-  const isEditMode = !!postId; // id가 있으면 수정 모드
-
-  // 입력 상태 관리
+  const { isAuthenticated, user, createPost, updatePost } = useAuthStore();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryInput, setCategoryInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // 🆕 페이지 로딩 상태
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  // 🏪 Zustand store에서 필요한 것들 가져오기
-  const {
-    user,
-    isAuthenticated,
-    createPost,
-    updatePost,
-    loading: storeLoading,
-  } = useAuthStore();
-  const router = useRouter();
+  interface PostData {
+    title: string;
+    content: string;
+    categories: string[];
+    images: string[];
+  }
 
-  // 🔐 로그인 검증
+  // 로그인 체크
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/login");
+      const currentPath = window.location.pathname;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
     }
+    setInitialLoading(false);
   }, [isAuthenticated, router]);
 
-  // 🆕 수정 모드일 때 기존 게시글 데이터 로드
+  // 수정 모드인 경우 게시글 데이터 불러오기
   useEffect(() => {
-    if (isEditMode && postId && isAuthenticated) {
+    const postId = searchParams.get("edit");
+    if (postId) {
+      setIsEditMode(true);
       fetchPostData(postId);
+    } else {
+      setInitialLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, postId, isAuthenticated]);
+  }, [searchParams]);
 
-  // 🆕 게시글 데이터 가져오기 함수
+  interface Category {
+    id: number;
+    name: string;
+  }
+
   const fetchPostData = async (id: string) => {
-    setLoading(true);
     try {
-      // 🔍 현재 로그인한 사용자의 게시글만 수정 가능하도록 user.userId 사용
-      const response = await useAuthStore
-        .getState()
-        .authenticatedFetch(`${API_URL}/posts/@${user?.userId}/${id}`);
+      if (!user?.userId) {
+        setError("사용자 정보를 찾을 수 없습니다.");
+        setInitialLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/posts/@${user.userId}/${id}`);
 
       if (!response.ok) {
-        throw new Error("게시글을 불러올 수 없습니다.");
+        if (response.status === 404) {
+          setError("게시글을 찾을 수 없습니다.");
+        } else {
+          setError("게시글을 불러오는데 실패했습니다.");
+        }
+        setInitialLoading(false);
+        return;
       }
 
-      const post = await response.json();
-
-      // 📝 폼에 기존 데이터 채우기
-      setTitle(post.title);
-      setContent(post.content);
-      setCategories(
-        post.categories?.map(
-          (category: { id: number; name: string }) => category.name
-        ) || []
-      );
-
-      // 🆕 기존 이미지들도 로드 (이 부분 추가)
-      if (post.images && Array.isArray(post.images)) {
-        setUploadedImages(post.images);
+      const data = await response.json();
+      if (!data) {
+        setError("게시글 데이터가 없습니다.");
+        setInitialLoading(false);
+        return;
       }
+
+      // 데이터 유효성 검사
+      if (!data.title || !data.content) {
+        setError("게시글 데이터가 올바르지 않습니다.");
+        setInitialLoading(false);
+        return;
+      }
+
+      setTitle(data.title);
+      setContent(data.content);
+      setCategories(data.categories?.map((cat: Category) => cat.name) || []);
     } catch (error) {
+      console.error("Error fetching post:", error);
       setError("게시글을 불러오는데 실패했습니다.");
-      console.error("게시글 로드 에러:", error);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  // 초기 로딩 중일 때
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="h-12 bg-gray-800 rounded-xl w-1/3"></div>
+            <div className="h-64 bg-gray-800 rounded-xl"></div>
+            <div className="h-96 bg-gray-800 rounded-xl"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 발생 시
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <span className="text-red-400 mr-3 text-xl">⚠️</span>
+              <h1 className="text-xl font-bold text-red-400">{error}</h1>
+            </div>
+            <div className="space-y-4">
+              <button
+                onClick={() => router.back()}
+                className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
+              >
+                ← 이전 페이지로 돌아가기
+              </button>
+              <Link
+                href="/posts"
+                className="block text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
+              >
+                📝 전체 게시글 목록으로 이동
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 🏷️ 카테고리 입력 처리 (기존과 동일)
+  const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && categoryInput.trim()) {
+      e.preventDefault();
+      const newCategory = categoryInput.replace(/^#/, "").trim();
+      if (newCategory && !categories.includes(newCategory)) {
+        setCategories([...categories, newCategory]);
+      }
+      setCategoryInput("");
+    }
+  };
+
+  // 🗑️ 카테고리 삭제 함수 (기존과 동일)
+  const removeCategory = (categoryToRemove: string) => {
+    setCategories(categories.filter((cat) => cat !== categoryToRemove));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // 유효성 검사
+      if (!title.trim()) {
+        setError("제목을 입력해주세요.");
+        return;
+      }
+
+      if (!content.trim()) {
+        setError("내용을 입력해주세요.");
+        return;
+      }
+
+      const postData: PostData = {
+        title: title.trim(),
+        content: content.trim(),
+        categories: categories,
+        images: uploadedImages,
+      };
+
+      const editId = searchParams.get("edit");
+
+      if (isEditMode && editId) {
+        await updatePost(editId, postData);
+        alert("게시글이 수정되었습니다!");
+      } else {
+        await createPost(postData);
+        alert("게시글이 작성되었습니다!");
+      }
+
+      router.push("/posts");
+    } catch (error) {
+      setError(
+        isEditMode
+          ? "게시글 수정에 실패했습니다. 다시 시도해주세요."
+          : "게시글 작성에 실패했습니다. 다시 시도해주세요."
+      );
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -125,91 +251,6 @@ const WritePageContent = () => {
       throw error;
     }
   };
-  // 🏷️ 카테고리 입력 처리 (기존과 동일)
-  const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && categoryInput.trim()) {
-      e.preventDefault();
-      const newCategory = categoryInput.replace(/^#/, "").trim();
-      if (newCategory && !categories.includes(newCategory)) {
-        setCategories([...categories, newCategory]);
-      }
-      setCategoryInput("");
-    }
-  };
-
-  // 🗑️ 카테고리 삭제 함수 (기존과 동일)
-  const removeCategory = (categoryToRemove: string) => {
-    setCategories(categories.filter((cat) => cat !== categoryToRemove));
-  };
-
-  // 📤 게시글 제출 (작성/수정 분기)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // 🔍 유효성 검사
-    if (!title.trim()) {
-      setError("제목을 입력해주세요.");
-      return;
-    }
-
-    if (!content.trim()) {
-      setError("내용을 입력해주세요.");
-      return;
-    }
-
-    // if (categories.length === 0) {
-    //   setError("최소 1개의 카테고리를 입력해주세요.");
-    //   return;
-    // }
-
-    try {
-      const postData = {
-        title: title.trim(),
-        content: content.trim(),
-        categories: categories,
-        images: uploadedImages,
-      };
-
-      if (isEditMode && postId) {
-        // 🔄 수정 모드
-        await updatePost(postId, postData);
-        alert("게시글이 수정되었습니다!");
-      } else {
-        // ➕ 작성 모드
-        await createPost(postData);
-        alert("게시글이 작성되었습니다!");
-      }
-
-      // ✅ 성공 시 게시글 목록으로 이동
-      router.push("/posts");
-    } catch (error) {
-      setError(
-        isEditMode
-          ? "게시글 수정에 실패했습니다. 다시 시도해주세요."
-          : "게시글 작성에 실패했습니다. 다시 시도해주세요."
-      );
-      console.error(error);
-    }
-  };
-
-  // ⏳ 로그인 상태 확인 중일 때
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-transparent">
-        <div className="text-white">로그인이 필요합니다...</div>
-      </div>
-    );
-  }
-
-  // ⏳ 수정 모드에서 데이터 로딩 중일 때
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-transparent">
-        <div className="text-white">게시글 정보를 불러오는 중...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black/80 text-white relative overflow-hidden">
@@ -459,10 +500,10 @@ const WritePageContent = () => {
             </button>
             <button
               type="submit"
-              disabled={storeLoading}
+              disabled={loading}
               className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
             >
-              {storeLoading ? (
+              {loading ? (
                 <div className="flex items-center space-x-3">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>

@@ -35,13 +35,12 @@ const MDPreview = dynamic(
 export default function PostDetailPage({
   params,
 }: {
-  params: Promise<{ userId: string; id: string }>; // Promise 타입으로 변경
+  params: Promise<{ userId: string; id: string }>;
 }) {
-  // params Promise를 unwrap
   const resolvedParams = use(params);
-
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
@@ -49,6 +48,12 @@ export default function PostDetailPage({
   // 게시글 데이터 fetch
   useEffect(() => {
     async function fetchPostDetail() {
+      if (!resolvedParams?.userId || !resolvedParams?.id) {
+        setError("잘못된 접근입니다.");
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(
           `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`,
@@ -57,19 +62,31 @@ export default function PostDetailPage({
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch post detail");
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("게시글을 찾을 수 없습니다.");
+          } else {
+            setError("게시글을 불러오는데 실패했습니다.");
+          }
+          throw new Error("Failed to fetch post detail");
+        }
 
         const data = await response.json();
+        if (!data) {
+          setError("게시글 데이터가 없습니다.");
+          return;
+        }
         setPost(data);
       } catch (error) {
         console.error("Error fetching post detail:", error);
+        setError("게시글을 불러오는데 실패했습니다.");
       } finally {
         setLoading(false);
       }
     }
 
     fetchPostDetail();
-  }, [resolvedParams.userId, resolvedParams.id]); // resolvedParams 사용
+  }, [resolvedParams?.userId, resolvedParams?.id]);
 
   // localStorage에서 사용자 정보 가져오기
   useEffect(() => {
@@ -190,38 +207,76 @@ export default function PostDetailPage({
     (likedUser) => likedUser.id === currentUserId
   );
 
+  // 로딩 중일 때
   if (loading) {
     return (
-      <div className="min-h-screen bg-black/80 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>게시글 로딩 중...</p>
+      <div className="min-h-screen bg-black/80 text-white p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="h-8 bg-gray-800 rounded-lg w-3/4"></div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-800 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-800 rounded w-1/2"></div>
+            </div>
+            <div className="h-64 bg-gray-800 rounded-lg"></div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // 에러 발생 시
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black/80 text-white">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6 max-w-4xl mx-auto">
+            <div className="flex items-center mb-4">
+              <span className="text-red-400 mr-3 text-xl">⚠️</span>
+              <h1 className="text-xl font-bold text-red-400">{error}</h1>
+            </div>
+            <div className="space-y-4">
+              <Link
+                href="/posts"
+                className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
+              >
+                ← 전체 게시글 목록으로 돌아가기
+              </Link>
+              {resolvedParams?.userId && (
+                <Link
+                  href={`/posts/${resolvedParams.userId}`}
+                  className="block text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
+                >
+                  📝 작성자의 블로그 보기
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없을 때
   if (!post) {
     return (
       <div className="min-h-screen bg-black/80 text-white">
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold text-red-400 mb-4">
-            게시글을 찾을 수 없습니다
-          </h1>
-          <div className="space-y-2">
-            <Link
-              href="/posts"
-              className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
-            >
-              ← 전체 게시글 목록으로 돌아가기
-            </Link>
-            <br />
-            <Link
-              href={`/posts/${resolvedParams.userId}`}
-              className="text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
-            >
-              📝 {resolvedParams.userId}님의 블로그 보기
-            </Link>
+          <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-xl p-6 max-w-4xl mx-auto">
+            <div className="flex items-center mb-4">
+              <span className="text-yellow-400 mr-3 text-xl">⚠️</span>
+              <h1 className="text-xl font-bold text-yellow-400">
+                게시글을 찾을 수 없습니다
+              </h1>
+            </div>
+            <div className="space-y-4">
+              <Link
+                href="/posts"
+                className="text-blue-400 hover:text-blue-300 transition-colors inline-flex items-center"
+              >
+                ← 전체 게시글 목록으로 돌아가기
+              </Link>
+            </div>
           </div>
         </div>
       </div>
