@@ -7,9 +7,30 @@ import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
-import MDEditor from "@uiw/react-md-editor";
+import dynamic from "next/dynamic";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const MDPreview = dynamic(
+  () =>
+    import("@uiw/react-md-editor").then((mod) => {
+      return function MarkdownPreview({ source }: { source: string }) {
+        return (
+          <div data-color-mode="dark">
+            <mod.default.Markdown source={source} />
+          </div>
+        );
+      };
+    }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="min-h-[200px] bg-gray-800 rounded-xl"></div>
+      </div>
+    ),
+  }
+);
 
 export default function PostDetailPage({
   params,
@@ -284,26 +305,8 @@ export default function PostDetailPage({
             </button>
           </div>
           {/* 게시글 내용 */}
-          {/* <div className="prose prose-invert max-w-none">
-            <div className="text-gray-300 leading-relaxed whitespace-pre-wrap text-lg">
-              {post.content}
-            </div>
-          </div> */}
-          {/* // 🆕 마크다운 렌더링 */}
           <div className="prose prose-invert max-w-none">
-            <div className="w-full" data-color-mode="dark">
-              <MDEditor.Markdown
-                source={post.content}
-                style={{
-                  backgroundColor: "transparent",
-                  color: "#f3f4f6",
-                  padding: "20px",
-                  borderRadius: "12px",
-                  border: "1px solid #374151",
-                  minHeight: "200px",
-                }}
-              />
-            </div>
+            <MDPreview source={post.content} />
           </div>
         </article>
 

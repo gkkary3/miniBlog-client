@@ -3,7 +3,20 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
-import MDEditor, { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
+import dynamic from "next/dynamic";
+import type { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
+
+const MDEditor = dynamic(
+  () => import("@uiw/react-md-editor").then((mod) => mod.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-[500px] bg-gray-800 rounded-xl"></div>
+      </div>
+    ),
+  }
+);
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
