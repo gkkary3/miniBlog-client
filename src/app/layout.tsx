@@ -7,10 +7,10 @@ import Header from "@/components/Header";
 import QueryProvider from "./QueryProvider";
 import AuthInitializer from "@/components/AuthInitializer";
 
-const geist = Geist({
+const geistSans = Geist({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-geist",
+  variable: "--font-geist-sans",
 });
 
 const geistMono = Geist_Mono({
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className={`${geist.variable} ${geistMono.variable}`}>
+    <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
         <meta
           name="viewport"
