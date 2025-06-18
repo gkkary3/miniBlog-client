@@ -319,107 +319,98 @@ const WritePageContent = () => {
             </div>
 
             <div className="relative">
-              <div className="w-full" data-color-mode="dark">
-                <MDEditor
-                  value={content}
-                  onChange={(val) => setContent(val || "")}
-                  preview="edit"
-                  height={500}
-                  visibleDragbar={false}
-                  textareaProps={{
-                    placeholder:
-                      "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
-                    style: {
-                      fontSize: 16,
-                      lineHeight: "1.6",
-                      color: "#f3f4f6",
-                      backgroundColor: "rgba(0, 0, 0, 0.2)",
-                      border: "1px solid #4b5563",
-                      borderRadius: "12px",
-                    },
-                  }}
-                  extraCommands={[
-                    // 커스텀 이미지 업로드 명령어만 추가
-                    {
-                      name: "image-upload",
-                      keyCommand: "image-upload",
-                      buttonProps: {
-                        "aria-label": "이미지 업로드",
-                        title: "이미지 업로드 (최대 5MB)",
+              <div className="w-full">
+                {typeof window !== "undefined" && (
+                  <MDEditor
+                    value={content}
+                    onChange={(val) => setContent(val || "")}
+                    preview="edit"
+                    height={500}
+                    visibleDragbar={false}
+                    textareaProps={{
+                      placeholder:
+                        "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
+                      style: {
+                        fontSize: 16,
+                        lineHeight: "1.6",
+                        color: "#f3f4f6",
+                        backgroundColor: "rgba(0, 0, 0, 0.2)",
+                        border: "1px solid #4b5563",
+                        borderRadius: "12px",
                       },
-                      icon: (
-                        <div
-                          style={{
-                            fontSize: "16px",
-                            display: "flex",
-                            alignItems: "center",
-                            color: "#f3f4f6",
-                          }}
-                        >
-                          🖼️
-                        </div>
-                      ),
-                      execute: async (
-                        state: TextState,
-                        api: TextAreaTextApi
-                      ) => {
-                        // 파일 선택 input 생성
-                        const input = document.createElement("input");
-                        input.type = "file";
-                        input.accept =
-                          "image/jpeg,image/jpg,image/png,image/gif,image/webp";
-                        input.multiple = false;
+                    }}
+                    extraCommands={[
+                      {
+                        name: "image-upload",
+                        keyCommand: "image-upload",
+                        buttonProps: {
+                          "aria-label": "이미지 업로드",
+                          title: "이미지 업로드 (최대 5MB)",
+                        },
+                        icon: (
+                          <div
+                            style={{
+                              fontSize: "16px",
+                              display: "flex",
+                              alignItems: "center",
+                              color: "#f3f4f6",
+                            }}
+                          >
+                            🖼️
+                          </div>
+                        ),
+                        execute: async (
+                          state: TextState,
+                          api: TextAreaTextApi
+                        ) => {
+                          if (typeof window === "undefined") return;
 
-                        input.onchange = async (e) => {
-                          const file = (e.target as HTMLInputElement)
-                            .files?.[0];
-                          if (file) {
-                            try {
-                              // 이미지 크기 제한 (5MB)
-                              if (file.size > 5 * 1024 * 1024) {
-                                alert("이미지 크기는 5MB 이하여야 합니다.");
-                                return;
+                          const input = document.createElement("input");
+                          input.type = "file";
+                          input.accept =
+                            "image/jpeg,image/jpg,image/png,image/gif,image/webp";
+                          input.multiple = false;
+
+                          input.onchange = async (e) => {
+                            const file = (e.target as HTMLInputElement)
+                              .files?.[0];
+                            if (file) {
+                              try {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  alert("이미지 크기는 5MB 이하여야 합니다.");
+                                  return;
+                                }
+
+                                const loadingText = `![업로드 중...](uploading-${Date.now()})`;
+                                api.replaceSelection(loadingText);
+
+                                const imageUrl = await uploadImage(file);
+                                const imageMarkdown = `![${file.name}](${imageUrl})`;
+                                setContent((prev) =>
+                                  prev.replace(loadingText, imageMarkdown)
+                                );
+
+                                console.log("이미지 업로드 성공:", imageUrl);
+                              } catch (error) {
+                                console.error("이미지 업로드 실패:", error);
+                                setContent((prev) => {
+                                  const loadingPattern =
+                                    /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
+                                  return prev.replace(loadingPattern, "");
+                                });
+                                alert(
+                                  "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
+                                );
                               }
-
-                              // 로딩 표시
-                              const loadingText = `![업로드 중...](uploading-${Date.now()})`;
-                              api.replaceSelection(loadingText);
-
-                              // 이미지 업로드
-                              const imageUrl = await uploadImage(file);
-
-                              // 마크다운 이미지 문법으로 교체
-                              const imageMarkdown = `![${file.name}](${imageUrl})`;
-
-                              // 현재 content에서 로딩 텍스트를 찾아서 교체
-                              setContent((prev) =>
-                                prev.replace(loadingText, imageMarkdown)
-                              );
-
-                              console.log("이미지 업로드 성공:", imageUrl);
-                            } catch (error) {
-                              console.error("이미지 업로드 실패:", error);
-
-                              // 로딩 텍스트 제거 (패턴으로 찾기)
-                              setContent((prev) => {
-                                const loadingPattern =
-                                  /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
-                                return prev.replace(loadingPattern, "");
-                              });
-
-                              alert(
-                                "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
-                              );
                             }
-                          }
-                        };
+                          };
 
-                        // 파일 선택 창 열기
-                        input.click();
+                          input.click();
+                        },
                       },
-                    },
-                  ]}
-                />
+                    ]}
+                  />
+                )}
               </div>
 
               <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg">
