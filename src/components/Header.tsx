@@ -71,9 +71,9 @@ export default function Header() {
           <div>
             <Link
               href="/posts"
-              className="text-xl font-bold text-white hover:text-blue-400 transition-colors"
+              className="text-2xl font-bold text-white hover:text-blue-400 transition-colors font-mono tracking-tight"
             >
-              🏠 MiniBlog
+              Boolog
             </Link>
           </div>
 

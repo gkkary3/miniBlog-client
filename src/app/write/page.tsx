@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
-import MDEditor from "@uiw/react-md-editor";
+import MDEditor, { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -353,7 +353,10 @@ export default function WritePage() {
                           🖼️
                         </div>
                       ),
-                      execute: async (state: any, api: any) => {
+                      execute: async (
+                        state: TextState,
+                        api: TextAreaTextApi
+                      ) => {
                         // 파일 선택 input 생성
                         const input = document.createElement("input");
                         input.type = "file";
