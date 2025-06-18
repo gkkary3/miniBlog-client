@@ -226,18 +226,29 @@ export default function PostsPage() {
                     {/* 게시글 헤더 */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                          {post.user.userId.charAt(0).toUpperCase()}
+                        <div
+                          className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer"
+                          onClick={(e) =>
+                            handleAuthorClick(e, post.user.userId)
+                          }
+                          title={post.user.username}
+                        >
+                          {post.user.username
+                            ? post.user.username.charAt(0).toUpperCase()
+                            : post.user.userId.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <button
+                          <span
+                            className="text-blue-400 font-medium cursor-pointer hover:underline"
                             onClick={(e) =>
                               handleAuthorClick(e, post.user.userId)
                             }
-                            className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
                           >
-                            {post.user.userId}
-                          </button>
+                            {post.user.username || post.user.userId}
+                          </span>
+                          <span className="text-xs text-gray-400 ml-2">
+                            by {post.user.userId}
+                          </span>
                           <p className="text-gray-500 text-xs">
                             {new Date(post.createdAt).toLocaleDateString(
                               "ko-KR"

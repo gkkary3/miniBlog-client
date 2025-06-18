@@ -42,12 +42,14 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center">
+      <div className="bg-gray-900 p-4 rounded-xl border border-gray-700 text-center">
         <p className="text-gray-400 mb-4">
           댓글을 작성하려면 로그인이 필요합니다.
         </p>
         <a
-          href="/login"
+          href={`/login?redirect=${encodeURIComponent(
+            window.location.pathname
+          )}`}
           className="text-blue-400 hover:text-blue-300 underline"
         >
           로그인하기
@@ -59,36 +61,34 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-900 p-4 rounded-lg border border-gray-700"
+      className="bg-gray-900 p-4 rounded-xl border border-gray-700"
     >
-      {/* 👤 사용자 정보 표시 */}
+      {/* 사용자 정보 */}
       <div className="flex items-center mb-3">
         <span className="text-sm text-gray-400">
           {user?.username || user?.userId}님으로 댓글 작성
         </span>
       </div>
-
-      {/* ✍️ 댓글 입력 */}
+      {/* 댓글 입력 */}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요..."
         rows={3}
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
         disabled={createMutation.isPending}
+        maxLength={500}
       />
-
-      {/* 📊 글자 수 & 버튼 */}
+      {/* 글자수 & 버튼 */}
       <div className="flex items-center justify-between mt-3">
         <span className="text-sm text-gray-500">
           {content.length} / 500 글자
         </span>
-
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setContent("")}
-            className="px-3 py-1 text-sm text-gray-400 hover:text-white transition-colors"
+            className="px-3 py-1 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
             disabled={!content || createMutation.isPending}
           >
             취소
@@ -100,7 +100,7 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
               createMutation.isPending ||
               content.length > 500
             }
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
           >
             {createMutation.isPending ? "작성 중..." : "댓글 작성"}
           </button>

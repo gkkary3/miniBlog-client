@@ -4,6 +4,8 @@ import {
   UpdateCommentRequest,
 } from "@/types/comment";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 // 🔑 토큰 가져오기 헬퍼 (작성/수정/삭제용)
 export const getAuthToken = () => {
   if (typeof window === "undefined") return null;
@@ -17,10 +19,10 @@ export const fetchComments = async (
   userId: string,
   postId: string
 ): Promise<Comment[]> => {
-  console.log(`댓글 조회 요청: /posts/@${userId}/${postId}/comments`);
+  console.log(`댓글 조회 요청: ${API_URL}/posts/@${userId}/${postId}/comments`);
 
   const response = await fetch(
-    `http://localhost:4000/posts/@${userId}/${postId}/comments`,
+    `${API_URL}/posts/@${userId}/${postId}/comments`,
     {
       method: "GET",
       headers: {
@@ -53,10 +55,13 @@ export const createComment = async (
     throw new Error("댓글 작성을 위해 로그인이 필요합니다.");
   }
 
-  console.log(`댓글 작성 요청: /posts/@${userId}/${postId}/comments`, data);
+  console.log(
+    `댓글 작성 요청: ${API_URL}/posts/@${userId}/${postId}/comments`,
+    data
+  );
 
   const response = await fetch(
-    `http://localhost:4000/posts/@${userId}/${postId}/comments`,
+    `${API_URL}/posts/@${userId}/${postId}/comments`,
     {
       method: "POST",
       headers: {
@@ -92,12 +97,12 @@ export const updateComment = async (
   }
 
   console.log(
-    `댓글 수정 요청: /posts/@${userId}/${postId}/comments/${commentId}`,
+    `댓글 수정 요청: ${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
     data
   );
 
   const response = await fetch(
-    `http://localhost:4000/posts/@${userId}/${postId}/comments/${commentId}`,
+    `${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
     {
       method: "PUT",
       headers: {
@@ -127,9 +132,9 @@ export const deleteComment = async (commentId: string): Promise<void> => {
     throw new Error("댓글 삭제를 위해 로그인이 필요합니다.");
   }
 
-  console.log(`댓글 삭제 요청: /comment/${commentId}`);
+  console.log(`댓글 삭제 요청: ${API_URL}/comment/${commentId}`);
 
-  const response = await fetch(`http://localhost:4000/comment/${commentId}`, {
+  const response = await fetch(`${API_URL}/comment/${commentId}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,

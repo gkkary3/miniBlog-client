@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
 import MDEditor from "@uiw/react-md-editor";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function PostDetailPage({
   params,
 }: {
@@ -28,7 +30,7 @@ export default function PostDetailPage({
     async function fetchPostDetail() {
       try {
         const response = await fetch(
-          `http://localhost:4000/posts/@${resolvedParams.userId}/${resolvedParams.id}`,
+          `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`,
           {
             cache: "no-store",
           }
@@ -61,7 +63,9 @@ export default function PostDetailPage({
   // 좋아요 처리 함수
   const handleLike = async () => {
     if (!isAuthenticated) {
-      router.push("/login");
+      const currentPath = window.location.pathname;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
     }
 
     if (!currentUserId || !post) return;
@@ -70,7 +74,7 @@ export default function PostDetailPage({
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(
-          `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
+          `${API_URL}/posts/@${resolvedParams.userId}/${post.id}/like`,
           {
             method: "POST",
             headers: {
@@ -86,7 +90,7 @@ export default function PostDetailPage({
 
       // 게시글 데이터 다시 fetch
       const updatedResponse = await fetch(
-        `http://localhost:4000/posts/@${resolvedParams.userId}/${resolvedParams.id}`
+        `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
@@ -98,7 +102,9 @@ export default function PostDetailPage({
   // 좋아요 취소 함수
   const handleUnlike = async () => {
     if (!isAuthenticated) {
-      router.push("/login");
+      const currentPath = window.location.pathname;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
     }
     if (!currentUserId || !post) return;
 
@@ -106,7 +112,7 @@ export default function PostDetailPage({
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(
-          `http://localhost:4000/posts/@${resolvedParams.userId}/${post.id}/like`,
+          `${API_URL}/posts/@${resolvedParams.userId}/${post.id}/like`,
           {
             method: "DELETE",
             headers: {
@@ -122,7 +128,7 @@ export default function PostDetailPage({
 
       // 게시글 데이터 다시 fetch
       const updatedResponse = await fetch(
-        `http://localhost:4000/posts/@${resolvedParams.userId}/${resolvedParams.id}`
+        `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
@@ -141,7 +147,7 @@ export default function PostDetailPage({
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(
-          `http://localhost:4000/posts/@${resolvedParams.userId}/${postId}`,
+          `${API_URL}/posts/@${resolvedParams.userId}/${postId}`,
           {
             method: "DELETE",
             headers: {
@@ -205,7 +211,7 @@ export default function PostDetailPage({
     <div className="min-h-screen bg-black/80 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* 네비게이션 */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="hidden flex items-center justify-between mb-8">
           <Link
             href="/posts"
             className="text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center text-sm"

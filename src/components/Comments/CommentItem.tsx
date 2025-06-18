@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Comment } from "@/types/comment";
 import { useUpdateComment, useDeleteComment } from "@/hooks/useComments";
 import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "next/navigation";
 
 interface CommentItemProps {
   comment: Comment;
@@ -20,6 +21,7 @@ export default function CommentItem({
   const [editContent, setEditContent] = useState(comment.content);
 
   const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
   // 🔄 댓글 수정/삭제 Mutations
   const updateMutation = useUpdateComment(userId, postId);
@@ -76,26 +78,59 @@ export default function CommentItem({
   };
 
   return (
-    <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
-      {/* 👤 댓글 헤더 */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <span className="font-medium text-white">
+    <article className="flex items-start gap-3 p-4 bg-gray-900 rounded-xl border border-gray-700 hover:bg-gray-800 transition-all duration-300 mb-3">
+      {/* 프로필 이니셜 */}
+      <div
+        className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer"
+        onClick={() => {
+          if (comment.user?.userId)
+            router.push(`/posts/${comment.user.userId}`);
+        }}
+        title={comment.user?.username}
+      >
+        {(comment.user?.username || comment.username || "U")
+          .charAt(0)
+          .toUpperCase()}
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className="text-blue-400 font-medium cursor-pointer hover:underline"
+            onClick={() => {
+              if (comment.user?.userId)
+                router.push(`/posts/${comment.user.userId}`);
+            }}
+          >
             {comment.user?.username ||
               comment.username ||
               `사용자${comment.userId}`}
           </span>
-          <span className="text-sm text-gray-400">
+          <span className="text-xs text-gray-400">
             {formatDate(comment.createdAt)}
           </span>
           {comment.createdAt !== comment.updatedAt && (
             <span className="text-xs text-gray-500">(수정됨)</span>
           )}
         </div>
-
-        {/* 🔧 수정/삭제 버튼 (작성자만) */}
+        {/* 댓글 내용 */}
+        <div>
+          {isEditing ? (
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              rows={3}
+              disabled={updateMutation.isPending}
+            />
+          ) : (
+            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+              {comment.content}
+            </p>
+          )}
+        </div>
+        {/* 수정/삭제 버튼 */}
         {isAuthor && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2 mt-2">
             {!isEditing ? (
               <>
                 <button
@@ -141,25 +176,6 @@ export default function CommentItem({
           </div>
         )}
       </div>
-
-      {/* 💬 댓글 내용 */}
-      <div>
-        {isEditing ? (
-          // 🔄 수정 모드
-          <textarea
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            rows={3}
-            disabled={updateMutation.isPending}
-          />
-        ) : (
-          // 👀 읽기 모드
-          <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-            {comment.content}
-          </p>
-        )}
-      </div>
-    </div>
+    </article>
   );
 }

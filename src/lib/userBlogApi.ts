@@ -1,5 +1,7 @@
 import { UserPost, UserBlogData, CategoryStats } from "@/types/post";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 // 📝 새로운 페이지네이션 API용 타입들
 export interface GetUserPostsParams {
   search?: string;
@@ -32,7 +34,7 @@ export const fetchUserPostsPaginated = async (
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
-    const url = `http://localhost:4000/posts/@${userId}${
+    const url = `${API_URL}/posts/@${userId}${
       queryParams.toString() ? "?" + queryParams.toString() : ""
     }`;
 
@@ -77,7 +79,7 @@ export const fetchUserBlog = async (userId: string): Promise<UserBlogData> => {
   console.log(`🔍 사용자 블로그 조회 시작: /posts/@${userId}`);
 
   try {
-    const response = await fetch(`http://localhost:4000/posts/@${userId}`, {
+    const response = await fetch(`${API_URL}/posts/@${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -203,4 +205,33 @@ export const getCategoryColor = (categoryName: string): string => {
   }
 
   return colors[Math.abs(hash) % colors.length];
+};
+
+export const fetchUserFollowers = async (userId: string): Promise<boolean> => {
+  const authStorage = localStorage.getItem("auth-storage");
+  let currentUserId: number | null = null;
+
+  if (authStorage) {
+    const authData = JSON.parse(authStorage);
+    currentUserId = authData.state.user?.id;
+  }
+
+  const queryParams = currentUserId ? `?currentUserId=${currentUserId}` : "";
+
+  const response = await fetch(
+    `${API_URL}/user/@${userId}/follow-status${queryParams}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.isFollowing;
 };

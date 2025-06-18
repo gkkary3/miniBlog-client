@@ -25,6 +25,8 @@ export enum SortType {
   COMMENTS = "comments",
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
   const [posts, setPosts] = useState<SearchPost[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,7 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
         sortBy: sortType,
       });
 
-      const response = await fetch(`http://localhost:4000/posts?${params}`);
+      const response = await fetch(`${API_URL}/posts?${params}`);
 
       if (!response.ok) {
         throw new Error(

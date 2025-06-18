@@ -28,6 +28,8 @@ interface AuthStore {
   initializeAuth: () => Promise<void>;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
@@ -44,7 +46,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // 서버에 로그인 요청
-          const response = await fetch("http://localhost:4000/auth/login", {
+          const response = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data), // { email, password }
@@ -78,9 +80,7 @@ export const useAuthStore = create<AuthStore>()(
       fetchUserInfo: async () => {
         try {
           // authenticatedFetch 사용 (자동 토큰 갱신)
-          const response = await get().authenticatedFetch(
-            "http://localhost:4000/auth/me"
-          );
+          const response = await get().authenticatedFetch(`${API_URL}/auth/me`);
 
           if (response.ok) {
             const userInfo: User = await response.json();
@@ -97,7 +97,7 @@ export const useAuthStore = create<AuthStore>()(
         set({ loading: true });
 
         try {
-          const response = await fetch("http://localhost:4000/auth/signup", {
+          const response = await fetch(`${API_URL}/auth/signup`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data), // { email, password, username, userId }
@@ -152,7 +152,7 @@ export const useAuthStore = create<AuthStore>()(
 
           console.log("Access Token 갱신 중...");
 
-          const response = await fetch("http://localhost:4000/auth/refresh", {
+          const response = await fetch(`${API_URL}/auth/refresh`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -270,7 +270,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           // JWT 토큰과 함께 게시글 작성 요청
           const response = await get().authenticatedFetch(
-            `http://localhost:4000/posts/@${user.userId}/write`,
+            `${API_URL}/posts/@${user.userId}/write`,
             {
               method: "POST",
               headers: {
@@ -311,7 +311,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           // JWT 토큰과 함께 게시글 수정 요청
           const response = await get().authenticatedFetch(
-            `http://localhost:4000/posts/@${user.userId}/${postId}`,
+            `${API_URL}/posts/@${user.userId}/${postId}`,
             {
               method: "PUT",
               headers: {

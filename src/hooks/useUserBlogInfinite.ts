@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { UserPost } from "@/types/post";
 import {
+  fetchUserFollowers,
   fetchUserPostsPaginated,
   GetUserPostsParams,
   UserPostsResponse,
@@ -17,6 +18,8 @@ interface UseUserBlogInfiniteResult {
   totalPages: number;
   followerCount: number;
   followingCount: number;
+  isFollowing: boolean;
+  setIsFollowing: (value: boolean) => void;
   setSearchInput: (input: string) => void;
   resetSearch: () => void;
   lastElementRef: (node: HTMLElement | null) => void;
@@ -37,6 +40,7 @@ export function useUserBlogInfinite(
   const [totalPages, setTotalPages] = useState(0);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const isInitialMount = useRef(true);
@@ -71,6 +75,8 @@ export function useUserBlogInfinite(
           params
         );
 
+        const isFollowing = await fetchUserFollowers(userId);
+
         console.log(
           `✅ fetchPosts 성공: ${data.posts.length}개 게시글, 총 ${data.total}개`
         );
@@ -86,6 +92,7 @@ export function useUserBlogInfinite(
         setHasMore(pageNum < data.totalPages);
         setFollowerCount(data.followerCount);
         setFollowingCount(data.followingCount);
+        setIsFollowing(isFollowing);
       } catch (err) {
         console.error(`❌ fetchPosts 실패:`, err);
         setError(
@@ -183,6 +190,8 @@ export function useUserBlogInfinite(
     totalPages,
     followerCount,
     followingCount,
+    isFollowing,
+    setIsFollowing,
     setSearchInput,
     resetSearch,
     lastElementRef,

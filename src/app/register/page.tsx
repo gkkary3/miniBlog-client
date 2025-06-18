@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "../../stores/authStore";
@@ -13,8 +13,14 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const { register, loading } = useAuthStore();
+  const { register, loading, isAuthenticated } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/posts");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

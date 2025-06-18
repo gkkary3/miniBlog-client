@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
 import MDEditor from "@uiw/react-md-editor";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function WritePage() {
   // URL 파라미터에서 게시글 ID 가져오기
   const searchParams = useSearchParams();
@@ -52,9 +54,7 @@ export default function WritePage() {
       // 🔍 현재 로그인한 사용자의 게시글만 수정 가능하도록 user.userId 사용
       const response = await useAuthStore
         .getState()
-        .authenticatedFetch(
-          `http://localhost:4000/posts/@${user?.userId}/${id}`
-        );
+        .authenticatedFetch(`${API_URL}/posts/@${user?.userId}/${id}`);
 
       if (!response.ok) {
         throw new Error("게시글을 불러올 수 없습니다.");

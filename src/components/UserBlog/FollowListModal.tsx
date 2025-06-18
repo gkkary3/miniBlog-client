@@ -17,6 +17,8 @@ interface FollowListModalProps {
   onClose: () => void;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const FollowListModal: React.FC<FollowListModalProps> = ({
   userId,
   type,
@@ -47,7 +49,7 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
           : "";
 
         const res = await fetch(
-          `http://localhost:4000/user/${userId}/${type}${queryParams}`
+          `${API_URL}/user/@${userId}/${type}${queryParams}`
         );
         if (!res.ok) throw new Error("유저 목록을 불러오지 못했습니다.");
         const data = await res.json();
@@ -71,16 +73,13 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
       const method = willFollow ? "POST" : "DELETE";
 
       const token = getAuthToken();
-      const res = await fetch(
-        `http://localhost:4000/user/${targetUserId}/follow`,
-        {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`${API_URL}/user/@${targetUserId}/follow`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!res.ok) throw new Error("팔로우 상태 변경에 실패했습니다.");
 

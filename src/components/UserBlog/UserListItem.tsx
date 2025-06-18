@@ -33,7 +33,11 @@ const UserListItem: React.FC<UserListItemProps> = ({
   const handleFollowClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLoading) return;
-
+    if (!currentUserId) {
+      const currentPath = window.location.pathname;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return;
+    }
     setIsLoading(true);
     try {
       await onFollowToggle(user.userId, !isFollowing);

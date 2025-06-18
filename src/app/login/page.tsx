@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "../../stores/authStore";
@@ -10,8 +10,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const { login, loading } = useAuthStore();
+  const { login, loading, isAuthenticated } = useAuthStore();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/posts");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +25,10 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
-      router.push("/posts");
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get("redirect");
+
+      router.push(redirectPath || "/posts");
     } catch {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
     }
