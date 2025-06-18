@@ -7,15 +7,14 @@ interface CommentListProps {
   comments: Comment[];
   userId: string;
   postId: string;
-  onCommentUpdate: (comment: Comment) => void;
 }
 
 export default function CommentList({
   comments,
   userId,
   postId,
-  onCommentUpdate,
 }: CommentListProps) {
+  console.log("comments", comments);
   return (
     <div className="space-y-4">
       {comments.map((comment) => (
@@ -24,7 +23,6 @@ export default function CommentList({
           comment={comment}
           userId={userId}
           postId={postId}
-          onCommentUpdate={onCommentUpdate}
         />
       ))}
     </div>

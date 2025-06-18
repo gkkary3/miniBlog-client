@@ -127,8 +127,14 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       // 로그아웃 함수
-      logout: async () => {
-        set({ user: null, accessToken: null, refreshToken: null });
+      logout: () => {
+        // 모든 상태를 초기화
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        });
       },
 
       // 로딩 상태 설정
@@ -150,8 +156,8 @@ export const useAuthStore = create<AuthStore>()(
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${refreshToken}`,
             },
-            body: JSON.stringify({ refreshToken }),
           });
 
           if (!response.ok) {
@@ -159,14 +165,19 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           const data = await response.json();
+
+          // 새로운 토큰들로 업데이트
           set({
             accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
           });
 
+          console.log("토큰 갱신 성공");
           return data.accessToken;
         } catch (error) {
-          set({ user: null, accessToken: null, refreshToken: null });
+          console.error("토큰 갱신 실패:", error);
+          // Refresh token도 만료된 경우 자동 로그아웃
+          console.log("자동 로그아웃 처리");
+          get().logout();
           throw error;
         }
       },
@@ -209,34 +220,39 @@ export const useAuthStore = create<AuthStore>()(
 
       // 앱 시작시 토큰 상태 확인
       initializeAuth: async () => {
-        const state = get();
-        try {
-          if (!state.accessToken && !state.refreshToken) {
-            set({ loading: false });
-            return;
-          }
+        const { accessToken, refreshToken } = get();
 
-          if (!state.accessToken && state.refreshToken) {
-            try {
-              await get().refreshAccessToken();
-            } catch (error) {
-              set({ loading: false });
-              return;
-            }
-          }
+        console.log("인증 상태 초기화 중...");
 
-          await get().fetchUserInfo();
-        } catch (error) {
+        if (!accessToken && !refreshToken) {
+          console.log("토큰이 없음 - 로그인 필요");
+          return;
+        }
+
+        if (!accessToken && refreshToken) {
+          // Access token만 없으면 갱신 시도
           try {
+            console.log("Access Token이 없음 - 갱신 시도");
             await get().refreshAccessToken();
             await get().fetchUserInfo();
-          } catch (finalError) {
-            set({
-              user: null,
-              accessToken: null,
-              refreshToken: null,
-              loading: false,
-            });
+          } catch (error) {
+            console.error("토큰 갱신 실패:", error);
+            console.log("토큰 갱신 실패 - 로그인 필요");
+          }
+        } else if (accessToken) {
+          // Access token이 있으면 사용자 정보 가져오기 시도
+          try {
+            await get().fetchUserInfo();
+          } catch (error) {
+            console.error("사용자 정보 로드 실패:", error);
+            console.log("사용자 정보 로드 실패 - 토큰 갱신 시도");
+            try {
+              await get().refreshAccessToken();
+              await get().fetchUserInfo();
+            } catch (error) {
+              console.error("토큰 갱신 실패:", error);
+              console.log("완전 실패 - 로그인 필요");
+            }
           }
         }
       },
