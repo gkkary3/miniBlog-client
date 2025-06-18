@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
 import MDEditor, { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function WritePage() {
+const WritePageContent = () => {
   // URL 파라미터에서 게시글 ID 가져오기
   const searchParams = useSearchParams();
   const postId = searchParams.get("id"); // ?id=2 에서 '2' 추출
@@ -485,5 +485,25 @@ export default function WritePage() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function WritePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse space-y-8">
+              <div className="h-12 bg-gray-800 rounded-xl w-1/3"></div>
+              <div className="h-64 bg-gray-800 rounded-xl"></div>
+              <div className="h-96 bg-gray-800 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <WritePageContent />
+    </Suspense>
   );
 }
