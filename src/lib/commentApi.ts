@@ -15,137 +15,93 @@ export const getAuthToken = () => {
 };
 
 // 💬 댓글 목록 조회 (토큰 불필요!)
-export const fetchComments = async (
-  userId: string,
-  postId: string
-): Promise<Comment[]> => {
-  console.log(`댓글 조회 요청: ${API_URL}/posts/@${userId}/${postId}/comments`);
-
-  const response = await fetch(
-    `${API_URL}/posts/@${userId}/${postId}/comments`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        // 🎯 토큰 없이 요청
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `댓글 조회 실패: ${response.status} ${response.statusText}`
+export async function fetchComments(userId: string, postId: string) {
+  try {
+    const response = await fetch(
+      `${API_URL}/posts/@${userId}/${postId}/comments`
     );
-  }
 
-  const comments = await response.json();
-  console.log("댓글 조회 성공:", comments);
-  return comments;
-};
+    if (!response.ok) {
+      throw new Error("댓글을 불러오는데 실패했습니다.");
+    }
+
+    const comments = await response.json();
+    return comments;
+  } catch (error) {
+    throw error;
+  }
+}
 
 // ✍️ 댓글 작성 (토큰 필요)
-export const createComment = async (
+export async function createComment(
   userId: string,
   postId: string,
-  data: CreateCommentRequest
-): Promise<Comment> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("댓글 작성을 위해 로그인이 필요합니다.");
-  }
-
-  console.log(
-    `댓글 작성 요청: ${API_URL}/posts/@${userId}/${postId}/comments`,
-    data
-  );
-
-  const response = await fetch(
-    `${API_URL}/posts/@${userId}/${postId}/comments`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `댓글 작성 실패: ${response.status} ${response.statusText}`
+  content: string
+) {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(
+      `${API_URL}/posts/@${userId}/${postId}/comments`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      }
     );
-  }
 
-  const newComment = await response.json();
-  console.log("댓글 작성 성공:", newComment);
-  return newComment;
-};
+    if (!response.ok) {
+      throw new Error("댓글 작성에 실패했습니다.");
+    }
+
+    const newComment = await response.json();
+    return newComment;
+  } catch (error) {
+    throw error;
+  }
+}
 
 // 🔄 댓글 수정 (토큰 필요)
-export const updateComment = async (
-  userId: string,
-  postId: string,
-  commentId: string,
-  data: UpdateCommentRequest
-): Promise<Comment> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("댓글 수정을 위해 로그인이 필요합니다.");
-  }
-
-  console.log(
-    `댓글 수정 요청: ${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
-    data
-  );
-
-  const response = await fetch(
-    `${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
-    {
-      method: "PUT",
+export async function updateComment(commentId: number, content: string) {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_URL}/comment/${commentId}`, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ content }),
+    });
+
+    if (!response.ok) {
+      throw new Error("댓글 수정에 실패했습니다.");
     }
-  );
 
-  if (!response.ok) {
-    throw new Error(
-      `댓글 수정 실패: ${response.status} ${response.statusText}`
-    );
+    const updatedComment = await response.json();
+    return updatedComment;
+  } catch (error) {
+    throw error;
   }
-
-  const updatedComment = await response.json();
-  console.log("댓글 수정 성공:", updatedComment);
-  return updatedComment;
-};
+}
 
 // 🗑️ 댓글 삭제 (토큰 필요)
-export const deleteComment = async (commentId: string): Promise<void> => {
-  const token = getAuthToken();
+export async function deleteComment(commentId: number) {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_URL}/comment/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-  if (!token) {
-    throw new Error("댓글 삭제를 위해 로그인이 필요합니다.");
+    if (!response.ok) {
+      throw new Error("댓글 삭제에 실패했습니다.");
+    }
+  } catch (error) {
+    throw error;
   }
-
-  console.log(`댓글 삭제 요청: ${API_URL}/comment/${commentId}`);
-
-  const response = await fetch(`${API_URL}/comment/${commentId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `댓글 삭제 실패: ${response.status} ${response.statusText}`
-    );
-  }
-
-  console.log("댓글 삭제 성공");
-};
+}

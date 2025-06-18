@@ -35,7 +35,6 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
       setError(null);
       try {
         const authStorage = localStorage.getItem("auth-storage");
-        console.log(authStorage);
         let currentUserId: number | null = null;
 
         if (authStorage) {

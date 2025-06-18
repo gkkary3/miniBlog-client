@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { use } from "react"; // Next.js 15에서 추가
 import Link from "next/link";
 import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
@@ -14,11 +13,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function PostDetailPage({
   params,
 }: {
-  params: Promise<{ userId: string; id: string }>; // Promise 타입으로 변경
+  params: { userId: string; id: string };
 }) {
-  // params Promise를 unwrap
-  const resolvedParams = use(params);
-
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -30,7 +26,7 @@ export default function PostDetailPage({
     async function fetchPostDetail() {
       try {
         const response = await fetch(
-          `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`,
+          `${API_URL}/posts/@${params.userId}/${params.id}`,
           {
             cache: "no-store",
           }
@@ -48,7 +44,7 @@ export default function PostDetailPage({
     }
 
     fetchPostDetail();
-  }, [resolvedParams.userId, resolvedParams.id]); // resolvedParams 사용
+  }, [params.userId, params.id]);
 
   // localStorage에서 사용자 정보 가져오기
   useEffect(() => {
@@ -74,7 +70,7 @@ export default function PostDetailPage({
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(
-          `${API_URL}/posts/@${resolvedParams.userId}/${post.id}/like`,
+          `${API_URL}/posts/@${params.userId}/${post.id}/like`,
           {
             method: "POST",
             headers: {
@@ -90,7 +86,7 @@ export default function PostDetailPage({
 
       // 게시글 데이터 다시 fetch
       const updatedResponse = await fetch(
-        `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
+        `${API_URL}/posts/@${params.userId}/${params.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
@@ -112,7 +108,7 @@ export default function PostDetailPage({
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(
-          `${API_URL}/posts/@${resolvedParams.userId}/${post.id}/like`,
+          `${API_URL}/posts/@${params.userId}/${post.id}/like`,
           {
             method: "DELETE",
             headers: {
@@ -128,7 +124,7 @@ export default function PostDetailPage({
 
       // 게시글 데이터 다시 fetch
       const updatedResponse = await fetch(
-        `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
+        `${API_URL}/posts/@${params.userId}/${params.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
@@ -146,19 +142,16 @@ export default function PostDetailPage({
     try {
       const response = await useAuthStore
         .getState()
-        .authenticatedFetch(
-          `${API_URL}/posts/@${resolvedParams.userId}/${postId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        .authenticatedFetch(`${API_URL}/posts/@${params.userId}/${postId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
       if (!response.ok) throw new Error("Failed to delete post");
       alert("게시글이 삭제되었습니다.");
-      router.push(`/posts/${resolvedParams.userId}`); // 사용자 블로그로 이동
+      router.push(`/posts/${params.userId}`); // 사용자 블로그로 이동
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -196,10 +189,10 @@ export default function PostDetailPage({
             </Link>
             <br />
             <Link
-              href={`/posts/${resolvedParams.userId}`}
+              href={`/posts/${params.userId}`}
               className="text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center"
             >
-              📝 {resolvedParams.userId}님의 블로그 보기
+              📝 {params.userId}님의 블로그 보기
             </Link>
           </div>
         </div>
@@ -232,7 +225,7 @@ export default function PostDetailPage({
               </div>
               <div>
                 <Link
-                  href={`/posts/${resolvedParams.userId}`}
+                  href={`/posts/${params.userId}`}
                   className="text-blue-400 hover:text-blue-300 transition-colors font-semibold text-lg hover:underline cursor-pointer"
                 >
                   {post.username}
@@ -309,10 +302,7 @@ export default function PostDetailPage({
 
         {/* 댓글 섹션 */}
         <div className="bg-black/40 rounded-lg p-8">
-          <CommentSection
-            userId={resolvedParams.userId}
-            postId={resolvedParams.id}
-          />
+          <CommentSection userId={params.userId} postId={params.id} />
         </div>
       </div>
     </div>

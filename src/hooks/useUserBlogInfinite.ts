@@ -6,6 +6,7 @@ import {
   GetUserPostsParams,
   UserPostsResponse,
 } from "@/lib/userBlogApi";
+import { useQueryClient } from "react-query";
 
 interface UseUserBlogInfiniteResult {
   posts: UserPost[];
@@ -23,6 +24,7 @@ interface UseUserBlogInfiniteResult {
   setSearchInput: (input: string) => void;
   resetSearch: () => void;
   lastElementRef: (node: HTMLElement | null) => void;
+  handleSearchInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function useUserBlogInfinite(
@@ -44,6 +46,11 @@ export function useUserBlogInfinite(
 
   const observer = useRef<IntersectionObserver | null>(null);
   const isInitialMount = useRef(true);
+  const queryClient = useQueryClient();
+
+  const debouncedSetSearchQuery = useCallback((newSearchQuery: string) => {
+    setSearchQuery(newSearchQuery);
+  }, []);
 
   // 게시글 조회 함수
   const fetchPosts = useCallback(
@@ -179,6 +186,26 @@ export function useUserBlogInfinite(
     }
   }, [fetchPosts]);
 
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchInput = e.target.value;
+    setSearchInput(newSearchInput);
+    debouncedSetSearchQuery(newSearchInput);
+  };
+
+  // 검색어가 변경되면 데이터를 리셋하고 새로 불러오기
+  useEffect(() => {
+    if (searchQuery !== undefined) {
+      queryClient.resetQueries(["userBlogPosts", userId]);
+    }
+  }, [searchQuery, userId, queryClient]);
+
+  // 컴포넌트가 언마운트되면 디바운스 취소
+  useEffect(() => {
+    return () => {
+      debouncedSetSearchQuery.cancel();
+    };
+  }, [debouncedSetSearchQuery]);
+
   return {
     posts,
     loading,
@@ -195,5 +222,6 @@ export function useUserBlogInfinite(
     setSearchInput,
     resetSearch,
     lastElementRef,
+    handleSearchInputChange,
   };
 }

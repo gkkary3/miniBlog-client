@@ -8,10 +8,10 @@ import MDEditor, { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const WritePageContent = () => {
-  // URL 파라미터에서 게시글 ID 가져오기
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const postId = searchParams.get("id"); // ?id=2 에서 '2' 추출
-  const isEditMode = !!postId; // id가 있으면 수정 모드
+  const postId = searchParams?.get("id"); // null 체크 추가
+  const isEditMode = !!postId;
 
   // 입력 상태 관리
   const [title, setTitle] = useState("");
@@ -20,9 +20,8 @@ const WritePageContent = () => {
   const [categoryInput, setCategoryInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // 🆕 페이지 로딩 상태
+  const [loading, setLoading] = useState(false);
 
-  // 🏪 Zustand store에서 필요한 것들 가져오기
   const {
     user,
     isAuthenticated,
@@ -30,7 +29,6 @@ const WritePageContent = () => {
     updatePost,
     loading: storeLoading,
   } = useAuthStore();
-  const router = useRouter();
 
   // 🔐 로그인 검증
   useEffect(() => {
@@ -39,19 +37,17 @@ const WritePageContent = () => {
     }
   }, [isAuthenticated, router]);
 
-  // 🆕 수정 모드일 때 기존 게시글 데이터 로드
+  // 수정 모드일 때 기존 게시글 데이터 로드
   useEffect(() => {
-    if (isEditMode && postId && isAuthenticated) {
+    if (isEditMode && postId && isAuthenticated && user?.userId) {
       fetchPostData(postId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, postId, isAuthenticated]);
+  }, [isEditMode, postId, isAuthenticated, user?.userId]);
 
-  // 🆕 게시글 데이터 가져오기 함수
+  // 게시글 데이터 가져오기 함수
   const fetchPostData = async (id: string) => {
     setLoading(true);
     try {
-      // 🔍 현재 로그인한 사용자의 게시글만 수정 가능하도록 user.userId 사용
       const response = await useAuthStore
         .getState()
         .authenticatedFetch(`${API_URL}/posts/@${user?.userId}/${id}`);
@@ -61,8 +57,6 @@ const WritePageContent = () => {
       }
 
       const post = await response.json();
-
-      // 📝 폼에 기존 데이터 채우기
       setTitle(post.title);
       setContent(post.content);
       setCategories(
@@ -71,13 +65,11 @@ const WritePageContent = () => {
         ) || []
       );
 
-      // 🆕 기존 이미지들도 로드 (이 부분 추가)
       if (post.images && Array.isArray(post.images)) {
         setUploadedImages(post.images);
       }
     } catch (error) {
       setError("게시글을 불러오는데 실패했습니다.");
-      console.error("게시글 로드 에러:", error);
     } finally {
       setLoading(false);
     }
@@ -112,6 +104,7 @@ const WritePageContent = () => {
       throw error;
     }
   };
+
   // 🏷️ 카테고리 입력 처리 (기존과 동일)
   const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && categoryInput.trim()) {
@@ -389,11 +382,7 @@ const WritePageContent = () => {
                               setContent((prev) =>
                                 prev.replace(loadingText, imageMarkdown)
                               );
-
-                              console.log("이미지 업로드 성공:", imageUrl);
                             } catch (error) {
-                              console.error("이미지 업로드 실패:", error);
-
                               // 로딩 텍스트 제거 (패턴으로 찾기)
                               setContent((prev) => {
                                 const loadingPattern =
