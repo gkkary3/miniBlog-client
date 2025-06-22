@@ -9,11 +9,7 @@ import FollowListModal from "@/components/UserBlog/FollowListModal";
 import { getAuthToken } from "@/lib/commentApi";
 import { useRouter } from "next/navigation";
 
-interface UserBlogProps {
-  userId: string;
-}
-
-export default function UserBlog({ userId }: UserBlogProps) {
+export default function UserBlog({ userId }: { userId: string }) {
   const router = useRouter();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

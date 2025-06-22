@@ -42,52 +42,55 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
   const observer = useRef<IntersectionObserver | null>(null);
 
   // 검색 게시글 가져오기 (빈 검색어일 때는 모든 게시글 가져옴)
-  const fetchSearchPosts = async (
-    searchTerm: string,
-    pageNum: number,
-    sortType: SortType,
-    isNewSearch: boolean = false
-  ) => {
-    setLoading(true);
-    setError(null);
+  const fetchSearchPosts = useCallback(
+    async (
+      searchTerm: string,
+      pageNum: number,
+      sortType: SortType,
+      isNewSearch: boolean = false
+    ) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const params = new URLSearchParams({
-        search: searchTerm,
-        page: pageNum.toString(),
-        limit: limit.toString(),
-        sortBy: sortType,
-      });
+      try {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          page: pageNum.toString(),
+          limit: limit.toString(),
+          sortBy: sortType,
+        });
 
-      const response = await fetch(`${API_URL}/posts?${params}`);
+        const response = await fetch(`${API_URL}/posts?${params}`);
 
-      if (!response.ok) {
-        throw new Error(
-          searchTerm
-            ? "검색에 실패했습니다."
-            : "게시글을 불러오는데 실패했습니다."
+        if (!response.ok) {
+          throw new Error(
+            searchTerm
+              ? "검색에 실패했습니다."
+              : "게시글을 불러오는데 실패했습니다."
+          );
+        }
+
+        const data: SearchResponse = await response.json();
+
+        if (isNewSearch) {
+          setPosts(data.posts);
+        } else {
+          setPosts((prev) => [...prev, ...data.posts]);
+        }
+
+        setTotal(data.total);
+        setTotalPages(data.totalPages);
+        setHasMore(pageNum < data.totalPages);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
         );
+      } finally {
+        setLoading(false);
       }
-
-      const data: SearchResponse = await response.json();
-
-      if (isNewSearch) {
-        setPosts(data.posts);
-      } else {
-        setPosts((prev) => [...prev, ...data.posts]);
-      }
-
-      setTotal(data.total);
-      setTotalPages(data.totalPages);
-      setHasMore(pageNum < data.totalPages);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [limit]
+  );
 
   const loadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -95,7 +98,7 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
       setPage(nextPage);
       fetchSearchPosts(searchQuery, nextPage, sortBy, false);
     }
-  }, [loading, hasMore, page, searchQuery, limit]);
+  }, [loading, hasMore, page, searchQuery, sortBy, fetchSearchPosts]);
 
   // 검색어 직접 설정 (기존 방식 호환용)
   const handleSearch = useCallback(
@@ -107,7 +110,7 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
       setHasMore(true);
       fetchSearchPosts(query, 1, sortBy, true);
     },
-    [limit]
+    [sortBy, fetchSearchPosts]
   );
 
   const resetSearch = useCallback(() => {
@@ -119,7 +122,7 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
     setError(null);
     // 빈 검색어로 기본 게시글 목록 로드
     fetchSearchPosts("", 1, sortBy, true);
-  }, [limit]);
+  }, [sortBy, fetchSearchPosts]);
 
   const lastElementRef = useCallback(
     (node: HTMLElement | null) => {
@@ -154,12 +157,12 @@ export function useInfiniteSearch(limit: number = 10): UseInfiniteSearchResult {
     setHasMore(true);
     setError(null);
     fetchSearchPosts(searchQuery, 1, sortBy, true);
-  }, [searchQuery, limit, sortBy]);
+  }, [searchQuery, sortBy, fetchSearchPosts]);
 
   // 컴포넌트 마운트 시 기본 게시글 로드 (빈 검색어로)
   useEffect(() => {
     fetchSearchPosts("", 1, sortBy, true);
-  }, [limit]);
+  }, [sortBy, fetchSearchPosts]);
 
   return {
     posts,

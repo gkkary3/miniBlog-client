@@ -99,14 +99,18 @@ export function useUserBlogInfinite(
         setFollowerCount(data.followerCount);
         setFollowingCount(data.followingCount);
         setIsFollowing(isFollowing);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`❌ fetchPosts 실패:`, err);
-        setError(err.message || "게시글을 불러오는 중 오류가 발생했습니다.");
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "게시글을 불러오는 중 오류가 발생했습니다.";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     },
-    [userId, limit, page]
+    [userId, limit]
   );
 
   // 더 많은 게시글 로드

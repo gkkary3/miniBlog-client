@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../../stores/authStore";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
@@ -168,5 +168,25 @@ export default function OAuthCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 로딩 폴백 컴포넌트
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-black/80 text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p>로딩 중...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }

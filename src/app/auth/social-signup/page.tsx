@@ -1,16 +1,22 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuthStore } from "../../../stores/authStore";
 
-export default function SocialSignupPage() {
+interface SocialData {
+  email: string;
+  provider: string;
+  [key: string]: unknown;
+}
+
+function SocialSignupContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { setSocialLogin } = useAuthStore();
 
   // 소셜에서 받은 정보 파싱
-  const [socialData, setSocialData] = useState<any>(null);
+  const [socialData, setSocialData] = useState<SocialData | null>(null);
   const [userId, setUserId] = useState("");
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
@@ -21,7 +27,7 @@ export default function SocialSignupPage() {
     if (data) {
       try {
         setSocialData(JSON.parse(decodeURIComponent(data)));
-      } catch (e) {
+      } catch {
         alert("소셜 정보 파싱에 실패했습니다.");
         router.replace("/login");
       }
@@ -63,8 +69,10 @@ export default function SocialSignupPage() {
 
       // 메인 페이지로 이동
       router.replace("/posts");
-    } catch (err: any) {
-      setError(err.message || "회원가입 중 오류가 발생했습니다.");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "회원가입 중 오류가 발생했습니다.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -186,5 +194,24 @@ export default function SocialSignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-black/80 text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p>로딩 중...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SocialSignupPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SocialSignupContent />
+    </Suspense>
   );
 }
