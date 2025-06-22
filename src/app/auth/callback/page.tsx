@@ -5,9 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../../stores/authStore";
 
 function OAuthCallbackContent() {
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading"
-  );
+  const [status, setStatus] = useState<"loading" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   const { handleOAuthCallback } = useAuthStore();
@@ -47,12 +45,8 @@ function OAuthCallbackContent() {
         // 실제 파싱 및 set은 handleOAuthCallback에서!
         await handleOAuthCallback();
 
-        setStatus("success");
-
-        // 성공 시 잠시 후 메인 페이지로 리다이렉트
-        setTimeout(() => {
-          router.replace("/posts");
-        }, 1000);
+        // 성공 시 바로 메인 페이지로 리다이렉트 (메시지 없이)
+        router.replace("/posts");
       } catch (error) {
         console.error("OAuth 콜백 처리 에러:", error);
         setErrorMessage(
@@ -89,37 +83,6 @@ function OAuthCallbackContent() {
           <p className="text-gray-400 text-lg">
             잠시만 기다려주세요. 로그인을 완료하고 있습니다.
           </p>
-        </div>
-      </div>
-    );
-  }
-
-  // 성공 상태
-  if (status === "success") {
-    return (
-      <div className="min-h-screen bg-black/80 text-white flex items-center justify-center relative overflow-hidden">
-        {/* 배경 장식 요소들 */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-green-600/10 to-blue-600/10 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-purple-600/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative z-10 text-center">
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mx-auto flex items-center justify-center mb-6">
-              <span className="text-4xl">✅</span>
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-green-400 to-blue-600 bg-clip-text text-transparent">
-            로그인 성공!
-          </h1>
-          <p className="text-gray-400 text-lg mb-6">
-            환영합니다! 잠시 후 메인 페이지로 이동합니다.
-          </p>
-          <div className="flex items-center justify-center space-x-2 text-green-400">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-400"></div>
-            <span>리다이렉트 중...</span>
-          </div>
         </div>
       </div>
     );
