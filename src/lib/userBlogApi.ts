@@ -1,4 +1,4 @@
-import { UserPost, UserBlogData, CategoryStats } from "@/types/post";
+import { UserPost, UserBlogData, CategoryStats, User } from "@/types/post";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,6 +12,7 @@ export interface GetUserPostsParams {
 export interface UserPostsResponse {
   posts: UserPost[];
   total: number;
+  user: User | null;
   page: number;
   limit: number;
   totalPages: number;

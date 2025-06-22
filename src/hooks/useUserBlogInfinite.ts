@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { UserPost } from "@/types/post";
+import { UserPost, User } from "@/types/post";
 import {
   fetchUserFollowers,
   fetchUserPostsPaginated,
@@ -23,6 +23,7 @@ interface UseUserBlogInfiniteResult {
   setSearchInput: (input: string) => void;
   resetSearch: () => void;
   lastElementRef: (node: HTMLElement | null) => void;
+  userInfo: User | null;
 }
 
 export function useUserBlogInfinite(
@@ -41,6 +42,7 @@ export function useUserBlogInfinite(
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const isInitialMount = useRef(true);
@@ -75,6 +77,10 @@ export function useUserBlogInfinite(
           params
         );
 
+        if (data.user) {
+          setUserInfo(data.user);
+        }
+
         const isFollowing = await fetchUserFollowers(userId);
 
         console.log(
@@ -89,20 +95,18 @@ export function useUserBlogInfinite(
 
         setTotal(data.total);
         setTotalPages(data.totalPages);
-        setHasMore(pageNum < data.totalPages);
+        setHasMore(data.posts.length > 0 && pageNum < data.totalPages);
         setFollowerCount(data.followerCount);
         setFollowingCount(data.followingCount);
         setIsFollowing(isFollowing);
-      } catch (err) {
+      } catch (err: any) {
         console.error(`❌ fetchPosts 실패:`, err);
-        setError(
-          err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
-        );
+        setError(err.message || "게시글을 불러오는 중 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
     },
-    [userId, limit]
+    [userId, limit, page]
   );
 
   // 더 많은 게시글 로드
@@ -184,6 +188,7 @@ export function useUserBlogInfinite(
     loading,
     hasMore,
     error,
+    userInfo,
     searchInput,
     searchQuery,
     total,

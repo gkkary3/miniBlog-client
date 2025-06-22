@@ -26,6 +26,16 @@ interface AuthStore {
   refreshAccessToken: () => Promise<string>;
   authenticatedFetch: (url: string, options?: RequestInit) => Promise<Response>;
   initializeAuth: () => Promise<void>;
+
+  // 🆕 OAuth 로그인 함수들 추가
+  startGoogleLogin: () => void;
+  startKakaoLogin: () => void;
+  setSocialLogin: (data: {
+    accessToken: string;
+    refreshToken: string;
+    user: User;
+  }) => void;
+  handleOAuthCallback: () => Promise<void>;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -337,6 +347,72 @@ export const useAuthStore = create<AuthStore>()(
           console.error("게시글 수정 에러:", error);
           throw error;
         }
+      },
+
+      // 🆕 OAuth 로그인 함수들 추가
+      startGoogleLogin: () => {
+        // Google OAuth 로그인 시작
+        // 서버의 /auth/google 엔드포인트로 리다이렉트
+        if (typeof window !== "undefined") {
+          window.location.href = `${API_URL}/auth/google`;
+        }
+      },
+
+      startKakaoLogin: () => {
+        // Kakao OAuth 로그인 시작
+        // 서버의 /auth/kakao 엔드포인트로 리다이렉트
+        if (typeof window !== "undefined") {
+          window.location.href = `${API_URL}/auth/kakao`;
+        }
+      },
+      setSocialLogin: ({
+        accessToken,
+        refreshToken,
+        user,
+      }: {
+        accessToken: string;
+        refreshToken: string;
+        user: User;
+      }) => {
+        set({
+          accessToken,
+          refreshToken,
+          user,
+          isAuthenticated: true,
+        });
+      },
+      handleOAuthCallback: async () => {
+        if (typeof window === "undefined") return;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get("accessToken");
+        const refreshToken = urlParams.get("refreshToken");
+        const error = urlParams.get("error");
+
+        if (error) {
+          console.error("OAuth 로그인 에러:", error);
+          throw new Error(`OAuth 로그인 실패: ${error}`);
+        }
+
+        if (!accessToken || !refreshToken) {
+          console.error("OAuth 토큰이 없습니다.");
+          throw new Error("OAuth 토큰을 받지 못했습니다.");
+        }
+
+        set({
+          accessToken,
+          refreshToken,
+          isAuthenticated: true,
+        });
+
+        await get().fetchUserInfo();
+
+        // URL에서 민감정보 제거
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete("accessToken");
+        newUrl.searchParams.delete("refreshToken");
+        newUrl.searchParams.delete("error");
+        window.history.replaceState({}, "", newUrl.toString());
       },
     }),
     {

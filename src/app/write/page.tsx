@@ -97,7 +97,7 @@ const WritePageContent = () => {
 
       const response = await useAuthStore
         .getState()
-        .authenticatedFetch("http://localhost:4000/upload/image", {
+        .authenticatedFetch(`${API_URL}/upload/image`, {
           method: "POST",
           body: formData,
         });
