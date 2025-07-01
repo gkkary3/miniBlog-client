@@ -1,4 +1,5 @@
 import { UserPost, UserBlogData, CategoryStats, User } from "@/types/post";
+import { getAuthToken } from "./commentApi";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -235,4 +236,31 @@ export const fetchUserFollowers = async (userId: string): Promise<boolean> => {
 
   const data = await response.json();
   return data.isFollowing;
+};
+
+// 👤 사용자 정보 수정 API
+export const updateUserInfo = async (
+  userPk: number, // 고유 id (pk)
+  data: { username: string; userId: string }
+): Promise<unknown> => {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("사용자 정보 수정을 위해 로그인이 필요합니다.");
+  }
+
+  const response = await fetch(`${API_URL}/user/${userPk}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
 };

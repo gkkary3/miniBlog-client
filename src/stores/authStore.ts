@@ -20,6 +20,7 @@ interface AuthStore {
   logout: () => void;
   setLoading: (loading: boolean) => void;
   fetchUserInfo: () => Promise<void>;
+  forceUserUpdate: () => void;
   createPost: (data: CreatePostRequest) => Promise<void>;
   updatePost: (postId: string, data: CreatePostRequest) => Promise<void>;
 
@@ -94,12 +95,17 @@ export const useAuthStore = create<AuthStore>()(
 
           if (response.ok) {
             const userInfo: User = await response.json();
+            console.log("fetchUserInfo userInfo", userInfo);
             set({ user: userInfo });
           }
         } catch (error) {
           console.error("사용자 정보 가져오기 에러:", error);
           throw error;
         }
+      },
+
+      forceUserUpdate: () => {
+        get().fetchUserInfo(); // 다시 한번 호출
       },
 
       // 회원가입 함수

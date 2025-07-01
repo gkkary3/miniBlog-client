@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useAuthStore } from "../stores/authStore";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Modal from "./Modal";
+import { updateUserInfo } from "../lib/userBlogApi";
 
 export default function Header() {
   const router = useRouter();
@@ -13,6 +15,9 @@ export default function Header() {
   // 드롭다운 상태 관리
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isSettingOpen, setIsSettingOpen] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [editUserId, setEditUserId] = useState("");
 
   useEffect(() => {
     if (isAuthenticated && !user) {
@@ -47,6 +52,52 @@ export default function Header() {
   const handleDropdownItemClick = (action: () => void) => {
     action();
     setIsDropdownOpen(false);
+  };
+
+  // 설정 모달 열기
+  const openSettingModal = () => {
+    setEditUsername(user?.username || "");
+    setEditUserId(user?.userId || "");
+    setIsSettingOpen(true);
+  };
+  // 설정 모달 닫기
+  const closeSettingModal = () => {
+    setIsSettingOpen(false);
+  };
+
+  // 설정 모달 저장 핸들러
+  const handleUpdateUser = async () => {
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) throw new Error("로그인 정보가 없습니다.");
+      const authData = JSON.parse(authStorage);
+      const userPk = authData.state.user?.id;
+      if (!userPk) throw new Error("사용자 고유 id를 찾을 수 없습니다.");
+      await updateUserInfo(userPk, {
+        username: editUsername,
+        userId: editUserId,
+      });
+
+      authData.state.user = {
+        ...authData.state.user,
+        username: editUsername,
+        userId: editUserId,
+      };
+      localStorage.setItem("auth-storage", JSON.stringify(authData));
+
+      // 서버에서 최신 데이터 받아와서 상태 갱신
+      console.log("서버에서 받은 최신 데이터:", await fetchUserInfo());
+
+      setIsSettingOpen(false);
+
+      // TODO: 필요시 사용자 정보 새로고침
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "message" in err) {
+        alert((err as { message?: string }).message || "수정에 실패했습니다.");
+      } else {
+        alert("수정에 실패했습니다.");
+      }
+    }
   };
 
   if (loading) {
@@ -146,6 +197,18 @@ export default function Header() {
                         <span>내 블로그</span>
                       </button>
 
+                      {/* 설정 */}
+                      <button
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          openSettingModal();
+                        }}
+                        className="w-full px-4 py-3 text-left text-gray-300 hover:text-white hover:bg-black/40 transition-colors flex items-center space-x-3"
+                      >
+                        <span className="text-yellow-400">⚙️</span>
+                        <span>설정</span>
+                      </button>
+
                       {/* 구분선 */}
                       <div className="border-t border-gray-700 my-2"></div>
 
@@ -181,6 +244,41 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* 설정 모달 */}
+      <Modal isOpen={isSettingOpen} onClose={closeSettingModal}>
+        <div className="flex flex-col gap-6 w-80">
+          <h2 className="text-xl font-bold text-white mb-2">설정</h2>
+          <div className="flex flex-col gap-3">
+            <label className="text-gray-300 text-sm">사용자명</label>
+            <input
+              className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+              value={editUsername}
+              onChange={(e) => setEditUsername(e.target.value)}
+            />
+            <label className="text-gray-300 text-sm mt-2">사용자 ID</label>
+            <input
+              className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+              value={editUserId}
+              onChange={(e) => setEditUserId(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              onClick={handleUpdateUser}
+            >
+              수정
+            </button>
+            <button
+              className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+              onClick={closeSettingModal}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </Modal>
     </header>
   );
 }
