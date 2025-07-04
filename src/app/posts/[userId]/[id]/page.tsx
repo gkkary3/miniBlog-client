@@ -227,7 +227,7 @@ export default function PostDetailPage({
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-lg">
-                  {post.username?.charAt(0).toUpperCase()}
+                  {post.user.username?.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div>
@@ -235,7 +235,7 @@ export default function PostDetailPage({
                   href={`/posts/${resolvedParams.userId}`}
                   className="text-blue-400 hover:text-blue-300 transition-colors font-semibold text-lg hover:underline cursor-pointer"
                 >
-                  {post.username}
+                  {post.user.username}
                 </Link>
                 <p className="text-gray-400 text-sm">
                   📅{" "}

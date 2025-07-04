@@ -9,6 +9,7 @@ export interface Post {
   user: {
     userId: string;
     // 필요하다면 name이나 다른 사용자 정보도 추가
+    username: string;
     email: string;
   };
   likedUsers: {
