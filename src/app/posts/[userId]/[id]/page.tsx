@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { use } from "react"; // Next.js 15에서 추가
 import Link from "next/link";
+import Image from "next/image";
 import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
@@ -225,11 +226,21 @@ export default function PostDetailPage({
           {/* 작성자 정보 */}
           <div className="flex items-center justify-between mb-6 p-4 bg-black/20 rounded-lg">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
-                  {post.user.username?.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              {post.user.profileImage ? (
+                <Image
+                  src={post.user.profileImage}
+                  alt={`${post.user.username} 프로필`}
+                  width={48}
+                  height={48}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">
+                    {post.user.username?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <div>
                 <Link
                   href={`/posts/${resolvedParams.userId}`}
@@ -269,6 +280,21 @@ export default function PostDetailPage({
           </div>
           {/* 게시글 제목 */}
           <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
+
+          {/* 썸네일 이미지 */}
+          {post.thumbnail && (
+            <div className="mb-8">
+              <Image
+                src={post.thumbnail}
+                alt={`${post.title} 썸네일`}
+                width={800}
+                height={400}
+                className="w-full max-w-4xl mx-auto rounded-xl object-cover"
+                priority
+              />
+            </div>
+          )}
+
           {/* 좋아요 버튼 - 간단하게 */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
             <button
@@ -283,6 +309,7 @@ export default function PostDetailPage({
               <span>{post.likedUsers.length}</span>
             </button>
           </div>
+
           {/* 게시글 내용 */}
           {/* <div className="prose prose-invert max-w-none">
             <div className="text-gray-300 leading-relaxed whitespace-pre-wrap text-lg">

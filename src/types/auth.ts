@@ -4,6 +4,7 @@ export interface User {
   email: string; // 이메일 주소
   username: string; // 사용자 이름
   userId: string; // 사용자 ID (문자열, 고유값)
+  profileImage?: string; // 프로필 이미지 URL (선택사항)
 }
 
 // 로그인할 때 보낼 데이터 타입
@@ -31,6 +32,7 @@ export interface CreatePostRequest {
   content: string;
   categories: string[];
   images: string[];
+  thumbnail?: string;
 }
 
 // 🆕 OAuth 관련 타입들

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuthStore } from "../stores/authStore";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +19,8 @@ export default function Header() {
   const [isSettingOpen, setIsSettingOpen] = useState(false);
   const [editUsername, setEditUsername] = useState("");
   const [editUserId, setEditUserId] = useState("");
+  const [profileImage, setProfileImage] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isAuthenticated && !user) {
@@ -58,11 +61,50 @@ export default function Header() {
   const openSettingModal = () => {
     setEditUsername(user?.username || "");
     setEditUserId(user?.userId || "");
+    setProfileImage(user?.profileImage || "");
     setIsSettingOpen(true);
   };
   // 설정 모달 닫기
   const closeSettingModal = () => {
     setIsSettingOpen(false);
+  };
+
+  // 프로필 이미지 업로드 함수
+  const uploadProfileImage = async (file: File): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/image`, {
+          method: "POST",
+          body: formData,
+        });
+
+      if (!response.ok) {
+        throw new Error("이미지 업로드 실패");
+      }
+
+      const data = await response.json();
+      return data.imageUrl;
+    } catch (error) {
+      console.error("프로필 이미지 업로드 에러:", error);
+      throw error;
+    }
+  };
+
+  // 이미지 파일 변경 핸들러
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const imageUrl = await uploadProfileImage(file);
+        setProfileImage(imageUrl);
+      } catch {
+        alert("이미지 업로드에 실패했습니다.");
+      }
+    }
   };
 
   // 설정 모달 저장 핸들러
@@ -76,17 +118,19 @@ export default function Header() {
       await updateUserInfo(userPk, {
         username: editUsername,
         userId: editUserId,
+        profileImage: profileImage,
       });
 
       authData.state.user = {
         ...authData.state.user,
         username: editUsername,
         userId: editUserId,
+        profileImage: profileImage,
       };
       localStorage.setItem("auth-storage", JSON.stringify(authData));
 
       // 서버에서 최신 데이터 받아와서 상태 갱신
-      console.log("서버에서 받은 최신 데이터:", await fetchUserInfo());
+      await fetchUserInfo();
 
       setIsSettingOpen(false);
 
@@ -138,13 +182,23 @@ export default function Header() {
                   className="flex items-center space-x-3 bg-black/40 hover:bg-black/60 px-4 py-2 rounded-lg border border-gray-600 hover:border-gray-500 transition-all"
                 >
                   {/* 사용자 아바타 */}
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
-                      {(user?.username || user?.userId)
-                        ?.charAt(0)
-                        .toUpperCase()}
-                    </span>
-                  </div>
+                  {user?.profileImage ? (
+                    <Image
+                      src={user.profileImage}
+                      alt="프로필"
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">
+                        {(user?.username || user?.userId)
+                          ?.charAt(0)
+                          .toUpperCase()}
+                      </span>
+                    </div>
+                  )}
 
                   {/* 사용자 이름 */}
                   <span className="text-white font-medium">
@@ -247,16 +301,51 @@ export default function Header() {
 
       {/* 설정 모달 */}
       <Modal isOpen={isSettingOpen} onClose={closeSettingModal}>
-        <div className="flex flex-col gap-6 w-80">
+        <div className="flex flex-col gap-6 w-84">
           <h2 className="text-xl font-bold text-white mb-2">설정</h2>
+
+          {/* 프로필 이미지 섹션 */}
+          <div className="flex flex-col items-center gap-3">
+            {profileImage ? (
+              <Image
+                src={profileImage}
+                alt="프로필 미리보기"
+                width={80}
+                height={80}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {(editUsername || user?.userId)?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+              ref={fileInputRef}
+            />
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+            >
+              프로필 사진 변경
+            </button>
+          </div>
+
           <div className="flex flex-col gap-3">
-            <label className="text-gray-300 text-sm">사용자명</label>
+            <label className="text-gray-300 text-sm">유저네임</label>
             <input
               className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
               value={editUsername}
               onChange={(e) => setEditUsername(e.target.value)}
             />
-            <label className="text-gray-300 text-sm mt-2">사용자 ID</label>
+            <label className="text-gray-300 text-sm mt-2">유저ID</label>
             <input
               className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
               value={editUserId}

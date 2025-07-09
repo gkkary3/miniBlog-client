@@ -297,6 +297,7 @@ export const useAuthStore = create<AuthStore>()(
                 content: data.content,
                 categories: data.categories,
                 images: data.images,
+                thumbnail: data.thumbnail,
               }),
             }
           );
@@ -338,6 +339,7 @@ export const useAuthStore = create<AuthStore>()(
                 content: data.content,
                 categories: data.categories,
                 images: data.images,
+                thumbnail: data.thumbnail,
               }),
             }
           );

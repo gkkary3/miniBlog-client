@@ -25,6 +25,7 @@ const WritePageContent = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [categoryInput, setCategoryInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [thumbnail, setThumbnail] = useState<string>("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); // 🆕 페이지 로딩 상태
 
@@ -76,6 +77,7 @@ const WritePageContent = () => {
           (category: { id: number; name: string }) => category.name
         ) || []
       );
+      setThumbnail(post.thumbnail || "");
 
       // 🆕 기존 이미지들도 로드 (이 부분 추가)
       if (post.images && Array.isArray(post.images)) {
@@ -118,6 +120,65 @@ const WritePageContent = () => {
       throw error;
     }
   };
+
+  // 썸네일 업로드 함수
+  const uploadThumbnail = async (file: File): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(`${API_URL}/upload/image`, {
+          method: "POST",
+          body: formData,
+        });
+
+      if (!response.ok) {
+        throw new Error("썸네일 업로드 실패");
+      }
+
+      const data = await response.json();
+      return data.imageUrl;
+    } catch (error) {
+      console.error("썸네일 업로드 에러:", error);
+      throw error;
+    }
+  };
+
+  // 썸네일 파일 선택 핸들러
+  const handleThumbnailChange = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert("이미지 크기는 5MB 이하여야 합니다.");
+      return;
+    }
+
+    try {
+      const imageUrl = await uploadThumbnail(file);
+      setThumbnail(imageUrl);
+    } catch {
+      alert("썸네일 업로드에 실패했습니다.");
+    }
+  };
+
+  // 드래그앤드롭 핸들러
+  const handleThumbnailDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      handleThumbnailChange(file);
+    }
+  };
+
+  const handleThumbnailDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  // 썸네일 삭제
+  const removeThumbnail = () => {
+    setThumbnail("");
+  };
+
   // 🏷️ 카테고리 입력 처리 (기존과 동일)
   const handleCategoryKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && categoryInput.trim()) {
@@ -162,6 +223,7 @@ const WritePageContent = () => {
         content: content.trim(),
         categories: categories,
         images: uploadedImages,
+        thumbnail: thumbnail,
       };
 
       if (isEditMode && postId) {
@@ -309,6 +371,77 @@ const WritePageContent = () => {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* 썸네일 업로드 */}
+          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <span className="text-2xl">🖼️</span>
+              <h3 className="text-xl font-semibold text-white">
+                썸네일 업로드
+              </h3>
+            </div>
+
+            {thumbnail ? (
+              // 썸네일 미리보기
+              <div className="relative inline-block">
+                <img
+                  src={thumbnail}
+                  alt="썸네일 미리보기"
+                  className="w-64 h-40 object-cover rounded-xl border border-gray-600"
+                />
+                <button
+                  type="button"
+                  onClick={removeThumbnail}
+                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              // 썸네일 업로드 영역
+              <div
+                onDrop={handleThumbnailDrop}
+                onDragOver={handleThumbnailDragOver}
+                className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                onClick={() =>
+                  document.getElementById("thumbnail-input")?.click()
+                }
+              >
+                <div className="text-gray-400 mb-4">
+                  <span className="text-4xl block mb-2">📸</span>
+                  <p className="text-lg mb-2">썸네일 이미지를 업로드하세요</p>
+                  <p className="text-sm">
+                    드래그 앤 드롭하거나 클릭하여 파일을 선택하세요
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    권장 크기: 1200x630px, 최대 5MB
+                  </p>
+                </div>
+
+                <input
+                  id="thumbnail-input"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleThumbnailChange(file);
+                  }}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document.getElementById("thumbnail-input")?.click();
+                  }}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  파일 선택
+                </button>
+              </div>
+            )}
           </div>
 
           {/* 내용 입력 */}

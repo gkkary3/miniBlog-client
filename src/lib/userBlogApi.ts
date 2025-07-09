@@ -241,7 +241,7 @@ export const fetchUserFollowers = async (userId: string): Promise<boolean> => {
 // 👤 사용자 정보 수정 API
 export const updateUserInfo = async (
   userPk: number, // 고유 id (pk)
-  data: { username: string; userId: string }
+  data: { username: string; userId: string; profileImage?: string }
 ): Promise<unknown> => {
   const token = getAuthToken();
 

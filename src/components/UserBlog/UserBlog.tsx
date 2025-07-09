@@ -8,6 +8,7 @@ import PostList from "@/components/UserBlog/PostList";
 import FollowListModal from "@/components/UserBlog/FollowListModal";
 import { getAuthToken } from "@/lib/commentApi";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function UserBlog({ userId }: { userId: string }) {
   const router = useRouter();
@@ -128,9 +129,19 @@ export default function UserBlog({ userId }: { userId: string }) {
         <div className="container mx-auto px-4 py-8">
           <div className="mb-8">
             <div className="flex flex-col items-center mb-6">
-              <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4 shadow-lg shadow-blue-500/20">
-                {(userInfo?.username || userId).charAt(0).toUpperCase()}
-              </div>
+              {userInfo?.profileImage ? (
+                <Image
+                  src={userInfo.profileImage}
+                  alt={`${userInfo.username || userId} 프로필`}
+                  width={96}
+                  height={96}
+                  className="rounded-full object-cover mb-4 shadow-lg shadow-blue-500/20"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4 shadow-lg shadow-blue-500/20">
+                  {(userInfo?.username || userId).charAt(0).toUpperCase()}
+                </div>
+              )}
               <h1 className="text-4xl font-bold mb-2 flex items-center gap-2">
                 <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
                   {userInfo?.username || userId}
@@ -254,9 +265,19 @@ export default function UserBlog({ userId }: { userId: string }) {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex flex-col items-center mb-6">
-            <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4 shadow-lg shadow-blue-500/20">
-              {(userInfo?.username || userId).charAt(0).toUpperCase()}
-            </div>
+            {userInfo?.profileImage ? (
+              <Image
+                src={userInfo.profileImage}
+                alt={`${userInfo.username || userId} 프로필`}
+                width={96}
+                height={96}
+                className="rounded-full object-cover mb-4 shadow-lg shadow-blue-500/20"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4 shadow-lg shadow-blue-500/20">
+                {(userInfo?.username || userId).charAt(0).toUpperCase()}
+              </div>
+            )}
             <h1 className="text-4xl font-bold mb-2 flex items-center gap-2">
               <span className="bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
                 {userInfo?.username || userId}

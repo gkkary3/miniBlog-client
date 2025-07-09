@@ -2,6 +2,7 @@ export interface Post {
   id: number;
   title: string;
   content: string;
+  thumbnail?: string;
   userId: number;
   username: string;
   createdAt: string;
@@ -11,6 +12,7 @@ export interface Post {
     // 필요하다면 name이나 다른 사용자 정보도 추가
     username: string;
     email: string;
+    profileImage?: string;
   };
   likedUsers: {
     id: number;
@@ -32,6 +34,7 @@ export interface User {
   username: string;
   email: string;
   userId: string;
+  profileImage?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +87,7 @@ export interface SearchPost {
     username: string;
     email: string;
     userId: string;
+    profileImage?: string;
     createdAt: string;
     updatedAt: string;
   };

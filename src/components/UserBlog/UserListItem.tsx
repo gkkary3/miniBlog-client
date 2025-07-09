@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface UserListItemProps {
   user: {
     id: number;
     userId: string;
     username: string;
+    profileImage?: string;
     isFollowing?: boolean;
   };
   isFollowing: boolean;
@@ -52,9 +54,19 @@ const UserListItem: React.FC<UserListItemProps> = ({
       className="flex items-center gap-3 p-3 bg-black/40 rounded-xl hover:bg-black/60 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-gray-600"
     >
       {/* 프로필 이니셜 */}
-      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-        {user.username.charAt(0).toUpperCase()}
-      </div>
+      {user.profileImage ? (
+        <Image
+          src={user.profileImage}
+          alt={`${user.username} 프로필`}
+          width={40}
+          height={40}
+          className="rounded-full object-cover"
+        />
+      ) : (
+        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+          {user.username.charAt(0).toUpperCase()}
+        </div>
+      )}
 
       {/* 사용자 정보 */}
       <div className="flex-1">
