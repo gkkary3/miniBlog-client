@@ -160,7 +160,7 @@ export default function Header() {
   return (
     // 🎨 투명 배경 + 어두운 테두리
     <header className="bg-transparent border-b border-gray-700">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-4 max-w-[1400px]">
         <div className="flex justify-between items-center">
           {/* 🏠 왼쪽: 홈 버튼 - 흰색 텍스트 */}
           <div>

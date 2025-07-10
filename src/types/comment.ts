@@ -13,6 +13,7 @@ export interface Comment {
     id: number; // User 테이블의 고유 ID
     username: string; // 사용자 이름
     userId: string; // 사용자 고유 문자열 ID (예: "Soda")
+    profileImage?: string; // 프로필 이미지 URL
   };
 }
 

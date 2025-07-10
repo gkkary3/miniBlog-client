@@ -44,6 +44,7 @@ export interface UserPost {
   id: number;
   title: string;
   content: string;
+  thumbnail?: string;
   userId: number;
   username: string;
   createdAt: string;
@@ -78,6 +79,7 @@ export interface SearchPost {
   title: string;
   content: string;
   images: string | null;
+  thumbnail?: string;
   userId: number;
   username: string;
   createdAt: string;

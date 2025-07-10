@@ -11,7 +11,7 @@ interface CommentFormProps {
 
 export default function CommentForm({ userId, postId }: CommentFormProps) {
   const [content, setContent] = useState("");
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   // 🔄 댓글 작성 Mutation
   const createMutation = useCreateComment(userId, postId);
@@ -42,15 +42,15 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="bg-gray-900 p-4 rounded-xl border border-gray-700 text-center">
-        <p className="text-gray-400 mb-4">
-          댓글을 작성하려면 로그인이 필요합니다.
+      <div className="bg-black/40 p-6 rounded-xl border border-gray-600/50 text-center">
+        <p className="text-gray-300 mb-4 text-lg">
+          댓글을 작성하려면 로그인이 필요합니다
         </p>
         <a
           href={`/login?redirect=${encodeURIComponent(
             window.location.pathname
           )}`}
-          className="text-blue-400 hover:text-blue-300 underline"
+          className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-all"
         >
           로그인하기
         </a>
@@ -61,34 +61,28 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-900 p-4 rounded-xl border border-gray-700"
+      className="bg-black/40 p-6 rounded-xl border border-gray-600/50"
     >
-      {/* 사용자 정보 */}
-      <div className="flex items-center mb-3">
-        <span className="text-sm text-gray-400">
-          {user?.username || user?.userId}님으로 댓글 작성
-        </span>
-      </div>
       {/* 댓글 입력 */}
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요..."
         rows={3}
-        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
+        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none transition-all"
         disabled={createMutation.isPending}
         maxLength={500}
       />
       {/* 글자수 & 버튼 */}
-      <div className="flex items-center justify-between mt-3">
-        <span className="text-sm text-gray-500">
+      <div className="flex items-center justify-between mt-4">
+        <span className="text-sm text-gray-400">
           {content.length} / 500 글자
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setContent("")}
-            className="px-3 py-1 text-sm text-gray-400 hover:text-white transition-colors rounded-lg"
+            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-gray-700"
             disabled={!content || createMutation.isPending}
           >
             취소
@@ -100,7 +94,7 @@ export default function CommentForm({ userId, postId }: CommentFormProps) {
               createMutation.isPending ||
               content.length > 500
             }
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+            className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {createMutation.isPending ? "작성 중..." : "댓글 작성"}
           </button>

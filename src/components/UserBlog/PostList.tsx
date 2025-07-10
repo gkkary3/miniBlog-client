@@ -82,6 +82,17 @@ export default function PostList({
           onClick={() => handlePostClick(post.id)}
           className="bg-black/40 rounded-lg p-6 hover:bg-black/30 transition-colors cursor-pointer group"
         >
+          {/* 썸네일 */}
+          {post.thumbnail && (
+            <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-800">
+              <img
+                src={post.thumbnail}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
           <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
             {post.title}
           </h2>
@@ -134,8 +145,8 @@ export default function PostList({
       {/* 로딩 인디케이터 */}
       {loading && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
-          <p className="text-gray-400 text-sm">게시글을 불러오는 중...</p>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400 mx-auto mb-2"></div>
+          <p className="text-gray-400 text-sm">더 많은 게시글 불러오는 중...</p>
         </div>
       )}
 

@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
 import MDEditor from "@uiw/react-md-editor";
+import { PostDetailSkeleton } from "@/components/Skeleton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -171,14 +172,7 @@ export default function PostDetailPage({
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black/80 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>게시글 로딩 중...</p>
-        </div>
-      </div>
-    );
+    return <PostDetailSkeleton />;
   }
 
   if (!post) {
@@ -210,7 +204,7 @@ export default function PostDetailPage({
 
   return (
     <div className="min-h-screen bg-black/80 text-white">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* 네비게이션 */}
         <div className="hidden flex items-center justify-between mb-8">
           <Link
@@ -281,20 +275,6 @@ export default function PostDetailPage({
           {/* 게시글 제목 */}
           <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
 
-          {/* 썸네일 이미지 */}
-          {post.thumbnail && (
-            <div className="mb-8">
-              <Image
-                src={post.thumbnail}
-                alt={`${post.title} 썸네일`}
-                width={800}
-                height={400}
-                className="w-full max-w-4xl mx-auto rounded-xl object-cover"
-                priority
-              />
-            </div>
-          )}
-
           {/* 좋아요 버튼 - 간단하게 */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
             <button
@@ -316,6 +296,20 @@ export default function PostDetailPage({
               {post.content}
             </div>
           </div> */}
+
+          {/* 썸네일 이미지 */}
+          {post.thumbnail && (
+            <div className="mb-8">
+              <Image
+                src={post.thumbnail}
+                alt={`${post.title} 썸네일`}
+                width={600}
+                height={300}
+                className="w-full max-w-2xl mx-auto rounded-xl object-cover shadow-lg"
+                priority
+              />
+            </div>
+          )}
           {/* // 🆕 마크다운 렌더링 */}
           <div className="prose prose-invert max-w-none">
             <div className="w-full" data-color-mode="dark">

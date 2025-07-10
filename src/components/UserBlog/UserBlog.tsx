@@ -9,6 +9,7 @@ import FollowListModal from "@/components/UserBlog/FollowListModal";
 import { getAuthToken } from "@/lib/commentApi";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { UserBlogSkeleton } from "@/components/Skeleton";
 
 export default function UserBlog({ userId }: { userId: string }) {
   const router = useRouter();
@@ -100,14 +101,7 @@ export default function UserBlog({ userId }: { userId: string }) {
   };
 
   if (loading && posts.length === 0) {
-    return (
-      <div className="min-h-screen bg-black/80 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>블로그 로딩 중...</p>
-        </div>
-      </div>
-    );
+    return <UserBlogSkeleton />;
   }
 
   if (error) {
@@ -126,7 +120,7 @@ export default function UserBlog({ userId }: { userId: string }) {
   if (posts.length === 0 && !loading && !searchQuery) {
     return (
       <div className="min-h-screen bg-black/80 text-white">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 max-w-[1200px]">
           <div className="mb-8">
             <div className="flex flex-col items-center mb-6">
               {userInfo?.profileImage ? (
@@ -262,7 +256,7 @@ export default function UserBlog({ userId }: { userId: string }) {
 
   return (
     <div className="min-h-screen bg-black/80 text-white">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1200px]">
         <div className="mb-8">
           <div className="flex flex-col items-center mb-6">
             {userInfo?.profileImage ? (

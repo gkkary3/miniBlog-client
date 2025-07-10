@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useInfiniteSearch, SortType } from "../../hooks/useInfiniteSearch";
 import { SearchPost } from "../../types/post";
+import { PostListSkeleton } from "../../components/Skeleton";
 
 export default function PostsPage() {
   const router = useRouter();
@@ -19,7 +20,6 @@ export default function PostsPage() {
     error,
     searchInput,
     searchQuery,
-    total,
     sortBy,
     setSortBy,
     setSearchInput,
@@ -56,25 +56,112 @@ export default function PostsPage() {
 
   return (
     <div className="min-h-screen bg-black/80 text-white">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1400px]">
         {/* 헤더 */}
         <div className="text-center mb-12 relative">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-            ✨ 모든 블로그 게시글
-          </h1>
-          <p className="text-gray-400 text-lg mb-8">
-            다양한 작성자들의 흥미로운 이야기를 만나보세요
-          </p>
+          {/* 백그라운드 패턴 - 상단만 */}
+          <div className="absolute top-0 left-0 right-0 h-48 overflow-hidden rounded-3xl -z-10">
+            {/* 글로벌 네트워크 패턴 - 더 선명하게 */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-800/40 via-purple-800/50 to-blue-800/40"></div>
 
-          {/* 전체 게시글 개수 표시 (검색 중이 아닐 때만) */}
-          {!searchQuery && total > 0 && (
-            <p className="text-gray-500 text-sm text-center mb-4">
-              총 {total}개의 게시글
-            </p>
-          )}
+            {/* 연결된 점들 - 네트워크 노드 (더 밝게) */}
+            <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-blue-400 rounded-full animate-pulse shadow-2xl shadow-blue-400/60 ring-2 ring-blue-400/30"></div>
+            <div className="absolute top-1/3 right-1/3 w-2.5 h-2.5 bg-purple-400 rounded-full animate-pulse delay-1000 shadow-2xl shadow-purple-400/60 ring-2 ring-purple-400/30"></div>
+            <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-blue-300 rounded-full animate-pulse delay-2000 shadow-2xl shadow-blue-300/60 ring-1 ring-blue-300/40"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-2.5 h-2.5 bg-purple-300 rounded-full animate-pulse delay-500 shadow-2xl shadow-purple-300/60 ring-2 ring-purple-300/30"></div>
+            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-1500 shadow-2xl shadow-blue-500/60 ring-1 ring-blue-500/40"></div>
+            <div className="absolute top-2/3 left-1/5 w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-700 shadow-2xl shadow-indigo-400/60 ring-1 ring-indigo-400/40"></div>
+            <div className="absolute bottom-1/5 right-1/5 w-2.5 h-2.5 bg-violet-400 rounded-full animate-pulse delay-1200 shadow-2xl shadow-violet-400/60 ring-2 ring-violet-400/30"></div>
+
+            {/* 연결선들 - SVG 곡선 (더 선명하게) */}
+            <svg
+              className="absolute inset-0 w-full h-full opacity-70"
+              viewBox="0 0 400 180"
+            >
+              <defs>
+                <linearGradient
+                  id="lineGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.8" />
+                  <stop offset="50%" stopColor="#a855f7" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.8" />
+                </linearGradient>
+                <linearGradient
+                  id="lineGradient2"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.7" />
+                  <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.7" />
+                </linearGradient>
+              </defs>
+              {/* 주요 연결선들 */}
+              <path
+                d="M100,45 Q200,30 300,60"
+                stroke="url(#lineGradient)"
+                strokeWidth="3"
+                fill="none"
+                className="animate-pulse"
+              />
+              <path
+                d="M80,120 Q180,100 280,130"
+                stroke="url(#lineGradient)"
+                strokeWidth="2"
+                fill="none"
+              />
+              <path
+                d="M50,80 Q150,65 250,95"
+                stroke="url(#lineGradient2)"
+                strokeWidth="2"
+                fill="none"
+              />
+              <path
+                d="M120,150 Q220,135 320,165"
+                stroke="url(#lineGradient2)"
+                strokeWidth="1.5"
+                fill="none"
+              />
+              {/* 보조 연결선들 */}
+              <path
+                d="M40,60 Q140,45 240,75"
+                stroke="url(#lineGradient)"
+                strokeWidth="1.5"
+                fill="none"
+                opacity="0.8"
+              />
+              <path
+                d="M160,40 Q260,55 360,85"
+                stroke="url(#lineGradient2)"
+                strokeWidth="1.5"
+                fill="none"
+                opacity="0.7"
+              />
+            </svg>
+
+            {/* 그라데이션 오버레이로 깊이감 연출 (약간 줄임) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
+          </div>
+
+          {/* 컨텐츠 */}
+          <div className="relative z-20 py-12">
+            {/* 장식 요소 */}
+            <div className="flex items-center justify-center space-x-4 mb-8">
+              <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-blue-400/60"></div>
+              <div className="w-2 h-2 bg-blue-400/80 rounded-full animate-pulse"></div>
+              <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-blue-400/60"></div>
+            </div>
+          </div>
 
           {/* 필터와 검색 컨테이너 (항상 표시) */}
-          <div className="mb-6">
+          <div className="mb-6 relative z-30">
             <div className="flex items-center justify-between">
               {/* 왼쪽: 정렬 필터 버튼들 */}
               <div className="flex gap-2">
@@ -201,7 +288,9 @@ export default function PostsPage() {
         {/* 게시글 목록 */}
         {!error && (
           <>
-            {posts.length === 0 && searchQuery && !loading ? (
+            {loading && posts.length === 0 ? (
+              <PostListSkeleton count={8} />
+            ) : posts.length === 0 && searchQuery && !loading ? (
               <div className="text-center py-20">
                 <div className="text-6xl mb-4">🔍</div>
                 <p className="text-gray-400 text-xl mb-2">
@@ -216,14 +305,33 @@ export default function PostsPage() {
                 <p className="text-gray-500">첫 번째 게시글을 작성해보세요!</p>
               </div>
             ) : (
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {posts.map((post, index) => (
                   <article
                     key={post.id}
                     ref={index === posts.length - 1 ? lastElementRef : null}
                     onClick={() => handlePostClick(post)}
-                    className="group bg-black/40 rounded-xl p-6 hover:bg-black/60 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-gray-600 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-1"
+                    className="group bg-black/40 rounded-xl p-6 hover:bg-black/60 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-gray-600 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-1 flex flex-col h-full"
                   >
+                    {/* 썸네일 이미지 */}
+                    <div className="mb-4 w-full h-48 rounded-lg overflow-hidden">
+                      {post.thumbnail ? (
+                        <Image
+                          src={post.thumbnail}
+                          alt={`${post.title} 썸네일`}
+                          width={400}
+                          height={200}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800/50 flex items-center justify-center border border-gray-700">
+                          <div className="text-center text-gray-500">
+                            <span className="text-sm">썸네일 없음</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* 게시글 헤더 */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
@@ -294,21 +402,30 @@ export default function PostsPage() {
                         : post.content}
                     </p>
 
-                    {/* 카테고리 표시 */}
-                    {post.categories && post.categories.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {post.categories.map((category) => (
-                          <span
-                            key={category.id}
-                            className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full border border-blue-600/30"
-                          >
-                            {category.name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    {/* 여백 확장 영역 */}
+                    <div className="flex-grow"></div>
 
-                    {/* 푸터 */}
+                    {/* 카테고리 표시 - 맨 아래 고정 */}
+                    <div className="h-12 flex items-start mb-4 mt-auto">
+                      {post.categories && post.categories.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {post.categories.map((category) => (
+                            <span
+                              key={category.id}
+                              className="px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-full border border-blue-600/30"
+                            >
+                              {category.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 text-xs">
+                          카테고리 없음
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 푸터 - 맨 아래 고정 */}
                     <div className="flex items-center justify-between pt-4 border-t border-gray-700">
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span className="flex items-center space-x-1">
@@ -327,11 +444,11 @@ export default function PostsPage() {
             )}
 
             {/* 로딩 인디케이터 */}
-            {loading && (
+            {loading && posts.length > 0 && (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                <p className="text-gray-400">
-                  {searchQuery ? "검색 중..." : "게시글을 불러오는 중..."}
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-2"></div>
+                <p className="text-gray-400 text-sm">
+                  더 많은 게시글 불러오는 중...
                 </p>
               </div>
             )}

@@ -22,15 +22,22 @@ export default function CommentSection({
   } = useComments(userId, postId);
 
   return (
-    <section className="mt-10 border-t border-gray-700 pt-10">
+    <section className="mt-12">
       {/* 댓글 섹션 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-white">
-          댓글 ({comments.length})
-        </h3>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            댓글
+          </h3>
+          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 px-3 py-1 rounded-full border border-blue-500/30">
+            <span className="text-blue-300 font-medium text-sm">
+              {comments.length}
+            </span>
+          </div>
+        </div>
         <button
           onClick={() => refetch()}
-          className="hidden text-sm text-gray-400 hover:text-white transition-colors px-3 py-1 rounded-lg border border-gray-700 hover:border-blue-500"
+          className="hidden text-sm text-gray-400 hover:text-blue-400 transition-colors px-4 py-2 rounded-lg bg-gray-800/50 border border-gray-600/50 hover:border-blue-500/50 hover:bg-gray-800/70"
         >
           ↻ 새로고침
         </button>
@@ -43,7 +50,8 @@ export default function CommentSection({
       <div>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-400">댓글을 불러오는 중...</div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-2"></div>
+            <div className="text-gray-400 text-sm">댓글을 불러오는 중...</div>
           </div>
         ) : error ? (
           <div className="text-center py-8">
@@ -58,9 +66,7 @@ export default function CommentSection({
             </button>
           </div>
         ) : comments.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요! 💬
-          </div>
+          <div></div>
         ) : (
           <CommentList comments={comments} userId={userId} postId={postId} />
         )}
