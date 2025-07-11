@@ -15,17 +15,17 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
       onClick={onClose}
     >
       <div
-        className="bg-black/80 w-full max-w-2xl rounded-xl shadow-lg border border-gray-800 max-h-[80vh] relative"
+        className="bg-black/80 w-full max-w-lg rounded-xl shadow-lg border border-gray-800 max-h-[85vh] relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 닫기 버튼 */}
         <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-xl"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors text-xl z-10"
           onClick={onClose}
         >
           ×
         </button>
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

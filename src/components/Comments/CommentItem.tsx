@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Comment } from "@/types/comment";
-import { useUpdateComment, useDeleteComment } from "@/hooks/useComments";
+import {
+  useUpdateComment,
+  useDeleteComment,
+  useCreateComment,
+} from "@/hooks/useComments";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -11,28 +15,37 @@ interface CommentItemProps {
   comment: Comment;
   userId: string;
   postId: string;
+  depth?: number; // 🆕 댓글 깊이 (0: 원댓글, 1: 대댓글)
 }
 
 export default function CommentItem({
   comment,
   userId,
   postId,
+  depth = 0,
 }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyContent, setReplyContent] = useState("");
+  const [showReplies, setShowReplies] = useState(false);
 
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
 
-  // 🔄 댓글 수정/삭제 Mutations
+  // 🔄 댓글 수정/삭제/작성 Mutations
   const updateMutation = useUpdateComment(userId, postId);
   const deleteMutation = useDeleteComment(userId, postId);
+  const createMutation = useCreateComment(userId, postId);
 
   // 👤 현재 사용자가 이 댓글의 작성자인지 확인
   const isAuthor =
     isAuthenticated &&
     user &&
     (user.id === comment.userId || user.userId === comment.user?.userId);
+
+  // 🆕 대댓글 작성 가능 여부 확인 (2단계 깊이 제한)
+  const canReply = depth === 0 && isAuthenticated;
 
   // 🔄 댓글 수정 처리
   const handleUpdate = async () => {
@@ -64,6 +77,27 @@ export default function CommentItem({
     } catch (error) {
       console.error("댓글 삭제 실패:", error);
       alert("댓글 삭제에 실패했습니다.");
+    }
+  };
+
+  // 🆕 대댓글 작성 처리
+  const handleReply = async () => {
+    if (!replyContent.trim()) {
+      alert("대댓글 내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      await createMutation.mutateAsync({
+        content: replyContent.trim(),
+        parentId: comment.id,
+      });
+      setIsReplying(false);
+      setReplyContent("");
+      setShowReplies(true); // 🆕 답글 작성 후 바로 보이도록
+    } catch (error) {
+      console.error("대댓글 작성 실패:", error);
+      alert("대댓글 작성에 실패했습니다.");
     }
   };
 
@@ -100,126 +134,203 @@ export default function CommentItem({
   };
 
   return (
-    <article className="flex items-start gap-4 p-6 bg-black/40 rounded-xl border border-gray-600/40 hover:border-gray-500/50 hover:bg-black/50 transition-all duration-300 mb-4">
-      {/* 프로필 이미지 */}
-      <div className="flex-shrink-0">
-        {comment.user?.profileImage ? (
-          <Image
-            src={comment.user.profileImage}
-            alt={`${comment.user.username || comment.username} 프로필`}
-            width={48}
-            height={48}
-            className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => {
-              if (comment.user?.userId)
-                router.push(`/posts/${comment.user.userId}`);
-            }}
-          />
-        ) : (
-          <div
-            className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:bg-gray-500 transition-colors"
-            onClick={() => {
-              if (comment.user?.userId)
-                router.push(`/posts/${comment.user.userId}`);
-            }}
-            title={comment.user?.username}
-          >
-            {(comment.user?.username || comment.username || "U")
-              .charAt(0)
-              .toUpperCase()}
-          </div>
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        {/* 헤더: 사용자명과 메타 정보 */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span
-              className="text-gray-200 font-semibold cursor-pointer hover:text-white transition-colors"
+    <div className={`${depth > 0 ? "ml-12" : ""}`}>
+      <article className="flex items-start gap-4 p-6 bg-black/40 rounded-xl border border-gray-600/40 hover:border-gray-500/50 hover:bg-black/50 transition-all duration-300 mb-4">
+        {/* 프로필 이미지 */}
+        <div className="flex-shrink-0">
+          {comment.user?.profileImage ? (
+            <Image
+              src={comment.user.profileImage}
+              alt={`${comment.user.username || comment.username} 프로필`}
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => {
                 if (comment.user?.userId)
                   router.push(`/posts/${comment.user.userId}`);
               }}
+            />
+          ) : (
+            <div
+              className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:bg-gray-500 transition-colors"
+              onClick={() => {
+                if (comment.user?.userId)
+                  router.push(`/posts/${comment.user.userId}`);
+              }}
+              title={comment.user?.username}
             >
-              {comment.user?.username ||
-                comment.username ||
-                `사용자${comment.userId}`}
-            </span>
-            <span className="text-xs text-gray-400">
-              {formatDate(comment.createdAt)}
-            </span>
-            {comment.createdAt !== comment.updatedAt && (
-              <span className="text-xs text-gray-500">(수정됨)</span>
-            )}
-          </div>
-
-          {/* 수정/삭제 버튼 - 우측 상단 고정 */}
-          {isAuthor && (
-            <div className="flex items-center gap-2">
-              {!isEditing ? (
-                <>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
-                    disabled={
-                      updateMutation.isPending || deleteMutation.isPending
-                    }
-                  >
-                    수정
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
-                    disabled={
-                      updateMutation.isPending || deleteMutation.isPending
-                    }
-                  >
-                    {deleteMutation.isPending ? "삭제 중..." : "삭제"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleUpdate}
-                    className="text-xs text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full transition-colors"
-                    disabled={updateMutation.isPending}
-                  >
-                    {updateMutation.isPending ? "저장 중..." : "저장"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditContent(comment.content);
-                    }}
-                    className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
-                    disabled={updateMutation.isPending}
-                  >
-                    취소
-                  </button>
-                </>
-              )}
+              {(comment.user?.username || comment.username || "U")
+                .charAt(0)
+                .toUpperCase()}
             </div>
           )}
         </div>
 
-        {/* 댓글 내용 */}
-        <div>
-          {isEditing ? (
-            <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none transition-all"
-              rows={3}
-              disabled={updateMutation.isPending}
-            />
-          ) : (
-            <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-              {comment.content}
-            </p>
+        <div className="flex-1 min-w-0">
+          {/* 헤더: 사용자명과 메타 정보 */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <span
+                className="text-gray-200 font-semibold cursor-pointer hover:text-white transition-colors"
+                onClick={() => {
+                  if (comment.user?.userId)
+                    router.push(`/posts/${comment.user.userId}`);
+                }}
+              >
+                {comment.user?.username ||
+                  comment.username ||
+                  `사용자${comment.userId}`}
+              </span>
+              <span className="text-xs text-gray-400">
+                {formatDate(comment.createdAt)}
+              </span>
+              {comment.createdAt !== comment.updatedAt && (
+                <span className="text-xs text-gray-500">(수정됨)</span>
+              )}
+            </div>
+
+            {/* 수정/삭제 버튼 - 우측 상단 고정 */}
+            {isAuthor && (
+              <div className="flex items-center gap-2">
+                {!isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      disabled={
+                        updateMutation.isPending || deleteMutation.isPending
+                      }
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      disabled={
+                        updateMutation.isPending || deleteMutation.isPending
+                      }
+                    >
+                      {deleteMutation.isPending ? "삭제 중..." : "삭제"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleUpdate}
+                      className="text-xs text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full transition-colors"
+                      disabled={updateMutation.isPending}
+                    >
+                      {updateMutation.isPending ? "저장 중..." : "저장"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditContent(comment.content);
+                      }}
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      disabled={updateMutation.isPending}
+                    >
+                      취소
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 댓글 내용 */}
+          <div className="mb-3">
+            {isEditing ? (
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none transition-all"
+                rows={3}
+                disabled={updateMutation.isPending}
+              />
+            ) : (
+              <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                {comment.content}
+              </p>
+            )}
+          </div>
+
+          {/* 🆕 대댓글 작성 버튼 및 답글 더보기 */}
+          {!isEditing &&
+            (canReply || (comment.replies && comment.replies.length > 0)) && (
+              <div className="flex items-center gap-2 mb-3">
+                {canReply && (
+                  <button
+                    onClick={() => setIsReplying(!isReplying)}
+                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    disabled={createMutation.isPending}
+                  >
+                    {isReplying ? "취소" : "답글"}
+                  </button>
+                )}
+
+                {comment.replies && comment.replies.length > 0 && (
+                  <button
+                    onClick={() => setShowReplies(!showReplies)}
+                    className="text-xs text-gray-400 hover:text-white hover:bg-gray-700/50 px-2 py-1 rounded transition-all"
+                  >
+                    {showReplies
+                      ? "답글 숨기기"
+                      : `답글 ${comment.replies.length}개 더보기`}
+                  </button>
+                )}
+              </div>
+            )}
+
+          {/* 🆕 대댓글 작성 폼 */}
+          {isReplying && (
+            <div className="mb-4 p-4 bg-gray-800/50 rounded-lg border border-gray-600/30">
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 resize-none transition-all"
+                rows={3}
+                placeholder="답글을 작성하세요..."
+                disabled={createMutation.isPending}
+              />
+              <div className="flex justify-end gap-2 mt-3">
+                <button
+                  onClick={() => {
+                    setIsReplying(false);
+                    setReplyContent("");
+                  }}
+                  className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                  disabled={createMutation.isPending}
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleReply}
+                  className="text-xs text-gray-400 hover:text-white hover:bg-gray-700/50 px-3 py-1 rounded-full transition-all"
+                  disabled={createMutation.isPending || !replyContent.trim()}
+                >
+                  {createMutation.isPending ? "작성 중..." : "답글 작성"}
+                </button>
+              </div>
+            </div>
           )}
         </div>
-      </div>
-    </article>
+      </article>
+
+      {/* 🆕 대댓글 목록 */}
+      {comment.replies && comment.replies.length > 0 && showReplies && (
+        <div className="space-y-4">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              userId={userId}
+              postId={postId}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

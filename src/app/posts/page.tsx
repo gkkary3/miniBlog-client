@@ -27,6 +27,36 @@ export default function PostsPage() {
     lastElementRef,
   } = useInfiniteSearch(10);
 
+  // 마크다운 문법 제거 및 텍스트 추출 함수
+  const stripMarkdown = (markdown: string): string => {
+    return (
+      markdown
+        // 이미지 제거 ![alt](url)
+        .replace(/!\[.*?\]\(.*?\)/g, "")
+        // 링크를 텍스트만 남기기 [text](url) -> text
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        // 헤더 제거 # ## ###
+        .replace(/^#{1,6}\s+/gm, "")
+        // 볼드, 이탤릭 제거 **text** *text*
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/\*([^*]+)\*/g, "$1")
+        // 코드 블록 제거 ```code```
+        .replace(/```[\s\S]*?```/g, "")
+        // 인라인 코드 제거 `code`
+        .replace(/`([^`]+)`/g, "$1")
+        // 인용 블록 제거 >
+        .replace(/^>\s+/gm, "")
+        // 리스트 마커 제거 - * +
+        .replace(/^[\s]*[-*+]\s+/gm, "")
+        // 숫자 리스트 제거 1. 2.
+        .replace(/^[\s]*\d+\.\s+/gm, "")
+        // 여러 줄바꿈을 하나로
+        .replace(/\n\s*\n/g, "\n")
+        // 앞뒤 공백 제거
+        .trim()
+    );
+  };
+
   const handlePostClick = (post: SearchPost) => {
     router.push(`/posts/${post.user.userId}/${post.id}`);
   };
@@ -167,30 +197,30 @@ export default function PostsPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSortBy(SortType.LATEST)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     sortBy === SortType.LATEST
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      ? "text-white bg-gray-700/70"
+                      : "text-gray-400 hover:text-white hover:bg-gray-700/50"
                   }`}
                 >
                   최신순
                 </button>
                 <button
                   onClick={() => setSortBy(SortType.LIKES)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     sortBy === SortType.LIKES
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      ? "text-white bg-gray-700/70"
+                      : "text-gray-400 hover:text-white hover:bg-gray-700/50"
                   }`}
                 >
                   좋아요순
                 </button>
                 <button
                   onClick={() => setSortBy(SortType.COMMENTS)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     sortBy === SortType.COMMENTS
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      ? "text-white bg-gray-700/70"
+                      : "text-gray-400 hover:text-white hover:bg-gray-700/50"
                   }`}
                 >
                   댓글순
@@ -324,9 +354,25 @@ export default function PostsPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-800/50 flex items-center justify-center border border-gray-700">
-                          <div className="text-center text-gray-500">
-                            <span className="text-sm">썸네일 없음</span>
+                        <div className="w-full h-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 flex items-center justify-center border border-gray-700/50 relative overflow-hidden">
+                          {/* 배경 패턴 */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-purple-900/10"></div>
+                          <div className="absolute top-2 right-2 text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">
+                            미리보기
+                          </div>
+
+                          {/* 게시글 내용 미리보기 */}
+                          <div className="relative z-10 p-4 w-full h-full flex flex-col justify-center">
+                            <div className="text-gray-300 text-sm leading-relaxed line-clamp-6 text-center">
+                              {(() => {
+                                const cleanContent = stripMarkdown(
+                                  post.content
+                                );
+                                return cleanContent.length > 200
+                                  ? cleanContent.substring(0, 200) + "..."
+                                  : cleanContent || "내용이 없습니다.";
+                              })()}
+                            </div>
                           </div>
                         </div>
                       )}

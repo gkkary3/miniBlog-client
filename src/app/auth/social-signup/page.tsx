@@ -116,7 +116,7 @@ function SocialSignupContent() {
                 htmlFor="userId"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                사용자 ID (고유값)
+                ID (고유값)
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -140,7 +140,7 @@ function SocialSignupContent() {
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
-                사용자명 (표시될 이름)
+                닉네임 (표시될 이름)
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

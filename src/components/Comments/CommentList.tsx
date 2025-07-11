@@ -15,6 +15,7 @@ export default function CommentList({
   postId,
 }: CommentListProps) {
   console.log("comments", comments);
+
   return (
     <div className="space-y-4">
       {comments.map((comment) => (
@@ -23,6 +24,7 @@ export default function CommentList({
           comment={comment}
           userId={userId}
           postId={postId}
+          depth={0}
         />
       ))}
     </div>

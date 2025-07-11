@@ -40,7 +40,65 @@ export const fetchComments = async (
 
   const comments = await response.json();
   console.log("댓글 조회 성공:", comments);
-  return comments;
+
+  // 🔍 서버에서 이미 트리 구조로 오는지 확인
+  if (comments.length > 0 && comments[0].replies) {
+    // 서버에서 이미 트리 구조로 제공하는 경우
+    console.log("서버에서 트리 구조 제공됨");
+    return comments;
+  } else {
+    // 서버에서 flat 구조로 제공하는 경우 클라이언트에서 트리 구조로 변환
+    console.log("클라이언트에서 트리 구조로 변환");
+    return organizeCommentsToTree(comments);
+  }
+};
+
+// 🌳 댓글을 트리 구조로 정리하는 헬퍼 함수
+export const organizeCommentsToTree = (comments: Comment[]): Comment[] => {
+  const commentMap = new Map<number, Comment>();
+  const rootComments: Comment[] = [];
+
+  // 먼저 모든 댓글을 Map에 저장하고 replies 배열 초기화, depth 설정
+  comments.forEach((comment) => {
+    commentMap.set(comment.id, {
+      ...comment,
+      replies: [],
+      depth: comment.parentId ? 1 : 0, // 부모 댓글이 있으면 depth 1, 없으면 0
+    });
+  });
+
+  // 부모-자식 관계 설정
+  comments.forEach((comment) => {
+    const commentWithReplies = commentMap.get(comment.id)!;
+
+    if (comment.parentId) {
+      // 대댓글인 경우 부모 댓글의 replies에 추가
+      const parentComment = commentMap.get(comment.parentId);
+      if (parentComment) {
+        parentComment.replies!.push(commentWithReplies);
+      }
+    } else {
+      // 원댓글인 경우 루트 목록에 추가
+      rootComments.push(commentWithReplies);
+    }
+  });
+
+  // 댓글을 생성일 기준으로 정렬
+  rootComments.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+
+  // 각 댓글의 replies도 정렬
+  rootComments.forEach((comment) => {
+    if (comment.replies) {
+      comment.replies.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+    }
+  });
+
+  return rootComments;
 };
 
 // ✍️ 댓글 작성 (토큰 필요)

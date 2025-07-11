@@ -23,10 +23,10 @@ export default function CategorySidebar({
         {/* 전체 카테고리 버튼 */}
         <button
           onClick={() => onCategorySelect(null)}
-          className={`w-full flex justify-between items-center p-3 rounded-lg transition-colors text-left ${
+          className={`w-full flex justify-between items-center p-3 rounded-lg transition-all text-left ${
             selectedCategory === null
-              ? "bg-blue-600 text-white"
-              : "bg-black/20 hover:bg-black/40 text-gray-300"
+              ? "text-white bg-gray-700/70"
+              : "text-gray-400 hover:text-white hover:bg-gray-700/50"
           }`}
         >
           <span>📚 전체</span>
@@ -38,10 +38,10 @@ export default function CategorySidebar({
           <button
             key={category.id}
             onClick={() => onCategorySelect(category.name)}
-            className={`w-full flex justify-between items-center p-3 rounded-lg transition-colors text-left ${
+            className={`w-full flex justify-between items-center p-3 rounded-lg transition-all text-left ${
               selectedCategory === category.name
-                ? "bg-blue-600 text-white"
-                : "bg-black/20 hover:bg-black/40 text-gray-300"
+                ? "text-white bg-gray-700/70"
+                : "text-gray-400 hover:text-white hover:bg-gray-700/50"
             }`}
           >
             <span>#{category.name}</span>

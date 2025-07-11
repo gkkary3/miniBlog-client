@@ -144,6 +144,68 @@ export default function Header() {
     }
   };
 
+  // 🗑️ 회원 탈퇴 핸들러
+  const handleDeleteAccount = async () => {
+    // 첫 번째 확인
+    const firstConfirm = confirm(
+      "정말로 회원 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다."
+    );
+
+    if (!firstConfirm) return;
+
+    // 두 번째 확인 (더 강한 경고)
+    const secondConfirm = confirm(
+      "⚠️ 마지막 확인입니다.\n\n회원 탈퇴를 진행하면:\n- 모든 게시글과 댓글이 삭제됩니다\n- 프로필 정보가 완전히 삭제됩니다\n- 복구가 불가능합니다\n\n정말로 탈퇴하시겠습니까?"
+    );
+
+    if (!secondConfirm) return;
+
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (!authStorage) throw new Error("로그인 정보가 없습니다.");
+
+      const authData = JSON.parse(authStorage);
+      const userPk = authData.state.user?.id;
+
+      if (!userPk) throw new Error("사용자 정보를 찾을 수 없습니다.");
+
+      // 회원 탈퇴 API 호출
+      const response = await useAuthStore
+        .getState()
+        .authenticatedFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/user/${userPk}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+      if (!response.ok) {
+        throw new Error("회원 탈퇴에 실패했습니다.");
+      }
+
+      // 탈퇴 성공 시 로그아웃 처리
+      alert("회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.");
+
+      // 로그아웃 및 데이터 정리
+      await logout();
+      localStorage.removeItem("auth-storage");
+
+      // 로그인 페이지로 이동
+      setIsSettingOpen(false);
+      router.push("/login");
+    } catch (err: unknown) {
+      console.error("회원 탈퇴 에러:", err);
+
+      if (err && typeof err === "object" && "message" in err) {
+        alert(
+          (err as { message?: string }).message || "회원 탈퇴에 실패했습니다."
+        );
+      } else {
+        alert("회원 탈퇴에 실패했습니다. 다시 시도해주세요.");
+      }
+    }
+  };
+
   if (loading) {
     return (
       // 🎨 로딩 시에도 어두운 테마 적용
@@ -283,13 +345,13 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
+                  className="text-gray-400 hover:text-white hover:bg-gray-700/50 px-3 py-2 rounded-lg transition-all"
                 >
                   로그인
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors border border-blue-500"
+                  className="text-gray-400 hover:text-white hover:bg-gray-700/50 px-3 py-2 rounded-lg transition-all"
                 >
                   회원가입
                 </Link>
@@ -301,11 +363,11 @@ export default function Header() {
 
       {/* 설정 모달 */}
       <Modal isOpen={isSettingOpen} onClose={closeSettingModal}>
-        <div className="flex flex-col gap-6 w-84">
-          <h2 className="text-xl font-bold text-white mb-2">설정</h2>
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          <h2 className="text-xl font-bold text-white">설정</h2>
 
           {/* 프로필 이미지 섹션 */}
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             {profileImage ? (
               <Image
                 src={profileImage}
@@ -332,35 +394,56 @@ export default function Header() {
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1 text-sm bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors"
+              className="px-3 py-1 text-sm text-gray-400 hover:text-white hover:bg-gray-700/50 rounded transition-all"
             >
               프로필 사진 변경
             </button>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <label className="text-gray-300 text-sm">유저네임</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-gray-300 text-sm">닉네임</label>
             <input
               className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
               value={editUsername}
               onChange={(e) => setEditUsername(e.target.value)}
             />
-            <label className="text-gray-300 text-sm mt-2">유저ID</label>
+            <label className="text-gray-300 text-sm mt-1">ID</label>
             <input
               className="px-3 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
               value={editUserId}
               onChange={(e) => setEditUserId(e.target.value)}
             />
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+
+          {/* 🚨 위험한 작업 섹션 */}
+          <div className="border-t border-red-900/30 pt-3 mt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-red-400 mb-1">
+                  위험한 작업
+                </h3>
+                <p className="text-xs text-gray-500">
+                  이 작업은 되돌릴 수 없습니다
+                </p>
+              </div>
+              <button
+                className="px-3 py-1 text-xs bg-red-900/20 text-red-400 border border-red-900/50 rounded hover:bg-red-900/30 hover:text-red-300 transition-colors"
+                onClick={handleDeleteAccount}
+              >
+                회원 탈퇴
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-3">
             <button
-              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 rounded text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all"
               onClick={handleUpdateUser}
             >
               수정
             </button>
             <button
-              className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 transition-colors"
+              className="px-4 py-2 rounded text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all"
               onClick={closeSettingModal}
             >
               취소

@@ -5,6 +5,8 @@ export interface Comment {
   userId: number; // 작성자의 User 테이블 ID (숫자)
   username: string; // 작성자 이름
   postId: number; // 게시글 ID
+  parentId?: number; // 🆕 부모 댓글 ID (대댓글인 경우)
+  depth?: number; // 🆕 댓글 깊이 (0: 원댓글, 1: 대댓글)
   createdAt: string; // 생성일 (ISO 문자열)
   updatedAt: string; // 수정일 (ISO 문자열)
 
@@ -15,11 +17,15 @@ export interface Comment {
     userId: string; // 사용자 고유 문자열 ID (예: "Soda")
     profileImage?: string; // 프로필 이미지 URL
   };
+
+  // 🆕 대댓글 목록 (클라이언트 측에서 트리 구조로 정리)
+  replies?: Comment[];
 }
 
 // 📝 댓글 작성할 때 보낼 데이터 타입
 export interface CreateCommentRequest {
   content: string; // 댓글 내용만 필요 (나머지는 서버에서 JWT로 처리)
+  parentId?: number; // 🆕 부모 댓글 ID (대댓글인 경우)
 }
 
 // 🔄 댓글 수정할 때 보낼 데이터 타입

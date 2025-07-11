@@ -274,345 +274,375 @@ const WritePageContent = () => {
         <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-blue-600/10 to-purple-600/10 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+      <div className="relative z-10 py-12">
         {/* 헤더 섹션 */}
         <div className="text-center mb-12">
-          <div className="mb-6">
-            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mx-auto flex items-center justify-center mb-6">
-              <span className="text-4xl">{isEditMode ? "✏️" : "📝"}</span>
-            </div>
+          <div className="container mx-auto px-4 max-w-3xl">
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              당신만의 특별한 이야기를 세상과 나누어보세요 🌟
+            </p>
           </div>
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-400 to-blue-600 bg-clip-text text-transparent">
-            {isEditMode ? "게시글 수정" : "새 게시글 작성"}
-          </h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            {isEditMode
-              ? "멋진 아이디어로 게시글을 더욱 빛나게 만들어보세요 ✨"
-              : "당신만의 특별한 이야기를 세상과 나누어보세요 🌟"}
-          </p>
         </div>
 
         {/* 게시글 작성/수정 폼 */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* 카테고리 입력 섹션 */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="text-2xl">🏷️</span>
-              <h3 className="text-xl font-semibold text-white">
-                카테고리 설정
-              </h3>
-            </div>
-
-            <label className="block text-sm font-medium text-gray-300 mb-4">
-              # + 카테고리명을 입력 후 엔터를 눌러주세요
-            </label>
-
-            <div className="relative mb-6">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="text-gray-500">#</span>
+          {/* 상단 섹션들 (카테고리, 제목, 썸네일) */}
+          <div className="container mx-auto px-4 max-w-3xl space-y-8">
+            {/* 카테고리 입력 섹션 */}
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+              <div className="flex items-center space-x-3 mb-6">
+                <span className="text-2xl">🏷️</span>
+                <h3 className="text-xl font-semibold text-white">
+                  카테고리 설정
+                </h3>
               </div>
-              <input
-                type="text"
-                value={categoryInput}
-                onChange={(e) => setCategoryInput(e.target.value)}
-                onKeyDown={handleCategoryKeyDown}
-                placeholder="javascript 입력 후 엔터"
-                className="w-full pl-8 pr-4 py-4 bg-black/20 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
-              />
-            </div>
 
-            {/* 추가된 카테고리들 표시 */}
-            {categories.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-sm text-gray-400 flex items-center">
-                  <span className="mr-2">📌</span>
-                  선택된 카테고리
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {categories.map((category, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-gradient-to-r from-green-600 to-blue-600 text-white font-medium shadow-lg"
-                    >
-                      #{category}
-                      <button
-                        type="button"
-                        onClick={() => removeCategory(category)}
-                        className="ml-3 text-green-200 hover:text-white transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
+              <label className="block text-sm font-medium text-gray-300 mb-4">
+                # + 카테고리명을 입력 후 엔터를 눌러주세요
+              </label>
+
+              <div className="relative mb-6">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-gray-500">#</span>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* 제목 입력 */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="text-2xl">📄</span>
-              <h3 className="text-xl font-semibold text-white">제목</h3>
-            </div>
-
-            <div className="relative">
-              <input
-                type="text"
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="멋진 제목을 입력해주세요..."
-                className="w-full px-6 py-4 bg-black/20 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
-              />
-              <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                <span className="text-gray-500 text-sm">
-                  {title.length}/100
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* 썸네일 업로드 */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="text-2xl">🖼️</span>
-              <h3 className="text-xl font-semibold text-white">
-                썸네일 업로드
-              </h3>
-            </div>
-
-            {thumbnail ? (
-              // 썸네일 미리보기
-              <div className="relative inline-block">
-                <img
-                  src={thumbnail}
-                  alt="썸네일 미리보기"
-                  className="w-64 h-40 object-cover rounded-xl border border-gray-600"
-                />
-                <button
-                  type="button"
-                  onClick={removeThumbnail}
-                  className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              // 썸네일 업로드 영역
-              <div
-                onDrop={handleThumbnailDrop}
-                onDragOver={handleThumbnailDragOver}
-                className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
-                onClick={() =>
-                  document.getElementById("thumbnail-input")?.click()
-                }
-              >
-                <div className="text-gray-400 mb-4">
-                  <span className="text-4xl block mb-2">📸</span>
-                  <p className="text-lg mb-2">썸네일 이미지를 업로드하세요</p>
-                  <p className="text-sm">
-                    드래그 앤 드롭하거나 클릭하여 파일을 선택하세요
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    권장 크기: 1200x630px, 최대 5MB
-                  </p>
-                </div>
-
                 <input
-                  id="thumbnail-input"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleThumbnailChange(file);
-                  }}
-                  className="hidden"
+                  type="text"
+                  value={categoryInput}
+                  onChange={(e) => setCategoryInput(e.target.value)}
+                  onKeyDown={handleCategoryKeyDown}
+                  placeholder="javascript 입력 후 엔터"
+                  className="w-full pl-8 pr-4 py-4 bg-black/20 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg"
                 />
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document.getElementById("thumbnail-input")?.click();
-                  }}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  파일 선택
-                </button>
               </div>
-            )}
-          </div>
 
-          {/* 내용 입력 */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
-            <div className="flex items-center space-x-3 mb-6">
-              <span className="text-2xl">📝</span>
-              <h3 className="text-xl font-semibold text-white">내용</h3>
+              {/* 추가된 카테고리들 표시 */}
+              {categories.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-400 flex items-center">
+                    <span className="mr-2">📌</span>
+                    선택된 카테고리
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {categories.map((category, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-4 py-2 rounded-full text-sm bg-gradient-to-r from-green-600 to-blue-600 text-white font-medium shadow-lg"
+                      >
+                        #{category}
+                        <button
+                          type="button"
+                          onClick={() => removeCategory(category)}
+                          className="ml-3 text-green-200 hover:text-white transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="relative">
-              <div className="w-full">
-                {typeof window !== "undefined" && (
-                  <MDEditor
-                    value={content}
-                    onChange={(val) => setContent(val || "")}
-                    preview="edit"
-                    height={500}
-                    visibleDragbar={false}
-                    textareaProps={{
-                      placeholder:
-                        "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
-                      style: {
-                        fontSize: 16,
-                        lineHeight: "1.6",
-                        color: "#f3f4f6",
-                        backgroundColor: "rgba(0, 0, 0, 0.2)",
-                        border: "1px solid #4b5563",
-                        borderRadius: "12px",
-                      },
-                    }}
-                    extraCommands={[
-                      {
-                        name: "image-upload",
-                        keyCommand: "image-upload",
-                        buttonProps: {
-                          "aria-label": "이미지 업로드",
-                          title: "이미지 업로드 (최대 5MB)",
-                        },
-                        icon: (
-                          <div
-                            style={{
-                              fontSize: "16px",
-                              display: "flex",
-                              alignItems: "center",
-                              color: "#f3f4f6",
-                            }}
-                          >
-                            🖼️
-                          </div>
-                        ),
-                        execute: async (
-                          state: TextState,
-                          api: TextAreaTextApi
-                        ) => {
-                          if (typeof window === "undefined") return;
-
-                          const input = document.createElement("input");
-                          input.type = "file";
-                          input.accept =
-                            "image/jpeg,image/jpg,image/png,image/gif,image/webp";
-                          input.multiple = false;
-
-                          input.onchange = async (e) => {
-                            const file = (e.target as HTMLInputElement)
-                              .files?.[0];
-                            if (file) {
-                              try {
-                                if (file.size > 5 * 1024 * 1024) {
-                                  alert("이미지 크기는 5MB 이하여야 합니다.");
-                                  return;
-                                }
-
-                                const loadingText = `![업로드 중...](uploading-${Date.now()})`;
-                                api.replaceSelection(loadingText);
-
-                                const imageUrl = await uploadImage(file);
-                                const imageMarkdown = `![${file.name}](${imageUrl})`;
-                                setContent((prev) =>
-                                  prev.replace(loadingText, imageMarkdown)
-                                );
-
-                                console.log("이미지 업로드 성공:", imageUrl);
-                              } catch (error) {
-                                console.error("이미지 업로드 실패:", error);
-                                setContent((prev) => {
-                                  const loadingPattern =
-                                    /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
-                                  return prev.replace(loadingPattern, "");
-                                });
-                                alert(
-                                  "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
-                                );
-                              }
-                            }
-                          };
-
-                          input.click();
-                        },
-                      },
-                    ]}
-                  />
-                )}
+            {/* 제목 입력 */}
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+              <div className="flex items-center space-x-3 mb-6">
+                <span className="text-2xl">📄</span>
+                <h3 className="text-xl font-semibold text-white">제목</h3>
               </div>
 
-              <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg">
-                <span className="text-gray-400 text-sm flex items-center">
-                  <span className="mr-1">📊</span>
-                  {content.length} 글자
-                </span>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="멋진 제목을 입력해주세요..."
+                  className="w-full px-6 py-4 bg-black/20 border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-lg"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                  <span className="text-gray-500 text-sm">
+                    {title.length}/100
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 썸네일 업로드 */}
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+              <div className="flex items-center space-x-3 mb-6">
+                <span className="text-2xl">🖼️</span>
+                <h3 className="text-xl font-semibold text-white">
+                  썸네일 업로드
+                </h3>
+              </div>
+
+              {thumbnail ? (
+                // 썸네일 미리보기
+                <div className="relative inline-block">
+                  <img
+                    src={thumbnail}
+                    alt="썸네일 미리보기"
+                    className="w-64 h-40 object-cover rounded-xl border border-gray-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeThumbnail}
+                    className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                // 썸네일 업로드 영역
+                <div
+                  onDrop={handleThumbnailDrop}
+                  onDragOver={handleThumbnailDragOver}
+                  className="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                  onClick={() =>
+                    document.getElementById("thumbnail-input")?.click()
+                  }
+                >
+                  <div className="text-gray-400 mb-4">
+                    <span className="text-4xl block mb-2">📸</span>
+                    <p className="text-lg mb-2">썸네일 이미지를 업로드하세요</p>
+                    <p className="text-sm">
+                      드래그 앤 드롭하거나 클릭하여 파일을 선택하세요
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      권장 크기: 1200x630px, 최대 5MB
+                      <br />
+                      지원 형식: JPG, PNG, GIF, WebP, AVIF
+                    </p>
+                  </div>
+
+                  <input
+                    id="thumbnail-input"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleThumbnailChange(file);
+                    }}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      document.getElementById("thumbnail-input")?.click();
+                    }}
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    파일 선택
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 내용 입력 - 헤더와 동일한 width */}
+          <div className="container mx-auto px-4 max-w-[1400px]">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+              <div className="flex items-center space-x-3 mb-6">
+                <span className="text-2xl">📝</span>
+                <h3 className="text-xl font-semibold text-white">내용</h3>
+              </div>
+
+              <div className="relative">
+                <div className="w-full">
+                  {typeof window !== "undefined" && (
+                    <MDEditor
+                      value={content}
+                      onChange={(val) => setContent(val || "")}
+                      preview="live"
+                      height={600}
+                      visibleDragbar={false}
+                      hideToolbar={false}
+                      previewOptions={{
+                        skipHtml: false,
+                      }}
+                      textareaProps={{
+                        placeholder:
+                          "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
+                        style: {
+                          fontSize: 16,
+                          lineHeight: "1.6",
+                          color: "#f3f4f6",
+                          backgroundColor: "rgba(0, 0, 0, 0.2)",
+                          border: "1px solid #4b5563",
+                          borderRadius: "12px",
+                        },
+                      }}
+                      data-color-mode="dark"
+                      style={{
+                        backgroundColor: "rgba(0, 0, 0, 0.3)",
+                        borderRadius: "12px",
+                        border: "1px solid #4b5563",
+                      }}
+                      extraCommands={[
+                        {
+                          name: "image-upload",
+                          keyCommand: "image-upload",
+                          buttonProps: {
+                            "aria-label": "이미지 업로드",
+                            title: "이미지 업로드 (최대 5MB)",
+                            style: {
+                              backgroundColor: "rgba(34, 197, 94, 0.1)",
+                              border: "1px solid rgba(34, 197, 94, 0.3)",
+                              borderRadius: "6px",
+                              padding: "8px 12px",
+                              minWidth: "48px",
+                              minHeight: "40px",
+                            },
+                          },
+                          icon: (
+                            <div
+                              style={{
+                                fontSize: "24px",
+                                display: "flex",
+                                alignItems: "center",
+                                color: "#f3f4f6",
+                                padding: "4px",
+                              }}
+                            >
+                              🖼️
+                            </div>
+                          ),
+                          execute: async (
+                            state: TextState,
+                            api: TextAreaTextApi
+                          ) => {
+                            if (typeof window === "undefined") return;
+
+                            const input = document.createElement("input");
+                            input.type = "file";
+                            input.accept =
+                              "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif";
+                            input.multiple = false;
+
+                            input.onchange = async (e) => {
+                              const file = (e.target as HTMLInputElement)
+                                .files?.[0];
+                              if (file) {
+                                try {
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    alert("이미지 크기는 5MB 이하여야 합니다.");
+                                    return;
+                                  }
+
+                                  const loadingText = `![업로드 중...](uploading-${Date.now()})`;
+                                  api.replaceSelection(loadingText);
+
+                                  const imageUrl = await uploadImage(file);
+
+                                  // 마크다운 형식으로 이미지 삽입
+                                  const imageMarkdown = `![${file.name}](${imageUrl})\n\n`;
+
+                                  setContent((prev) =>
+                                    prev.replace(loadingText, imageMarkdown)
+                                  );
+
+                                  console.log("이미지 업로드 성공:", imageUrl);
+                                  console.log(
+                                    "이미지 마크다운:",
+                                    imageMarkdown
+                                  );
+
+                                  // 이미지 URL 접근 가능한지 테스트
+                                  fetch(imageUrl, { method: "HEAD" })
+                                    .then((response) => {
+                                      console.log(
+                                        "이미지 URL 테스트 성공:",
+                                        response.status
+                                      );
+                                      console.log(
+                                        "Content-Type:",
+                                        response.headers.get("Content-Type")
+                                      );
+                                    })
+                                    .catch((error) => {
+                                      console.log(
+                                        "이미지 URL 테스트 실패:",
+                                        error
+                                      );
+                                    });
+                                } catch (error) {
+                                  console.error("이미지 업로드 실패:", error);
+                                  setContent((prev) => {
+                                    const loadingPattern =
+                                      /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
+                                    return prev.replace(loadingPattern, "");
+                                  });
+                                  alert(
+                                    "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
+                                  );
+                                }
+                              }
+                            };
+
+                            input.click();
+                          },
+                        },
+                      ]}
+                    />
+                  )}
+                </div>
+
+                <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg">
+                  <span className="text-gray-400 text-sm flex items-center">
+                    <span className="mr-1">📊</span>
+                    {content.length} 글자
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
-              <div className="flex items-center">
-                <span className="text-red-400 mr-3 text-xl">⚠️</span>
-                <p className="text-red-400 font-medium">{error}</p>
+            <div className="container mx-auto px-4 max-w-3xl">
+              <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
+                <div className="flex items-center">
+                  <span className="text-red-400 mr-3 text-xl">⚠️</span>
+                  <p className="text-red-400 font-medium">{error}</p>
+                </div>
               </div>
             </div>
           )}
 
           {/* 액션 버튼들 */}
-          <div className="flex justify-center space-x-6 pt-8">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-8 py-4 bg-gray-600/20 text-gray-300 rounded-xl hover:bg-gray-600/40 transition-all duration-300 font-medium border border-gray-600"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              disabled={storeLoading}
-              className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
-            >
-              {storeLoading ? (
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>
-                    {isEditMode ? "수정 처리 중..." : "작성 처리 중..."}
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <span>{isEditMode ? "✨" : "🚀"}</span>
-                  <span>
-                    {isEditMode ? "수정 완료하기" : "게시글 발행하기"}
-                  </span>
-                </div>
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* 하단 팁 섹션 */}
-        <div className="mt-16 text-center">
-          <div className="bg-black/20 rounded-xl p-6 border border-gray-700/30">
-            <h4 className="text-lg font-semibold text-blue-400 mb-3">
-              💡 작성 팁
-            </h4>
-            <div className="text-gray-400 text-sm space-y-1">
-              <p>• 독자의 시선을 끄는 매력적인 제목을 작성해보세요</p>
-              <p>
-                • 카테고리를 통해 관련 독자들이 쉽게 찾을 수 있도록 해주세요
-              </p>
-              <p>• 단락을 나누어 읽기 쉽게 구성해보세요</p>
+          <div className="container mx-auto px-4 max-w-3xl">
+            <div className="flex justify-center space-x-6 pt-8">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="px-8 py-4 bg-gray-600/20 text-gray-300 rounded-xl hover:bg-gray-600/40 transition-all duration-300 font-medium border border-gray-600"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={storeLoading}
+                className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl"
+              >
+                {storeLoading ? (
+                  <div className="flex items-center space-x-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>
+                      {isEditMode ? "수정 처리 중..." : "작성 처리 중..."}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <span>{isEditMode ? "✨" : ""}</span>
+                    <span>{isEditMode ? "수정 완료하기" : "게시글 작성"}</span>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

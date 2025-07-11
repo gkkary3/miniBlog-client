@@ -37,15 +37,43 @@ body {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
 }
 
+/* 편집 영역과 미리보기 영역을 분리하는 스타일 */
+.w-md-editor .w-md-editor-text-area {
+  border-right: 1px solid #4b5563 !important;
+}
+
+.w-md-editor.w-md-editor-focus .w-md-editor-text-area {
+  border-right-color: #3b82f6 !important;
+}
+
+/* 미리보기 영역 배경 */
+.w-md-editor .w-md-editor-preview {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0 0 12px 0 !important;
+}
+
 .w-md-editor-text-area > .w-md-editor-text-input,
 .w-md-editor-text-area > .w-md-editor-text {
   background-color: rgba(0, 0, 0, 0.2) !important;
   color: #f3f4f6 !important;
   border: none !important;
+  line-height: 1.6 !important;
+  font-size: 16px !important;
 }
 
 .w-md-editor-text-area .w-md-editor-text-input::placeholder {
   color: #9ca3af !important;
+}
+
+/* 텍스트 영역에서 이미지 마크다운 문법 강조 */
+.w-md-editor-text-area .w-md-editor-text-input {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  color: #f3f4f6 !important;
+  border: none !important;
+  line-height: 1.6 !important;
+  font-size: 16px !important;
+  padding: 16px !important;
+  border-radius: 0 0 12px 12px !important;
 }
 
 /* 툴바 스타일 */
@@ -53,17 +81,89 @@ body {
   background-color: rgba(0, 0, 0, 0.4) !important;
   border-bottom: 1px solid #4b5563 !important;
   border-radius: 12px 12px 0 0 !important;
+  padding: 8px !important;
+  min-height: 52px !important;
 }
 
 .w-md-editor-toolbar button {
   color: #f3f4f6 !important;
   background-color: transparent !important;
   border: none !important;
+  min-height: 38px !important;
+  min-width: 38px !important;
+  padding: 6px !important;
+  border-radius: 6px !important;
 }
 
 .w-md-editor-toolbar button:hover {
   background-color: rgba(59, 130, 246, 0.2) !important;
   color: #60a5fa !important;
+}
+
+/* 이미지 업로드 버튼 특별 스타일 */
+.w-md-editor-toolbar button[aria-label="이미지 업로드"] {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  min-height: 42px !important;
+  min-width: 50px !important;
+  padding: 8px 12px !important;
+  font-size: 20px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+.w-md-editor-toolbar button[aria-label="이미지 업로드"]:hover {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(34, 197, 94, 0.5) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+  transform: scale(1.05) !important;
+}
+
+/* 이미지 업로드 버튼 맨 앞에 배치 */
+.w-md-editor-toolbar button[aria-label="이미지 업로드"] {
+  order: -1 !important;
+  margin-right: 8px !important;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15),
+    rgba(16, 185, 129, 0.15)
+  ) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2) !important;
+  position: relative !important;
+}
+
+.w-md-editor-toolbar button[aria-label="이미지 업로드"]:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.25),
+    rgba(16, 185, 129, 0.25)
+  ) !important;
+  border-color: rgba(34, 197, 94, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* 이미지 업로드 버튼 주변에 약간의 글로우 효과 */
+.w-md-editor-toolbar button[aria-label="이미지 업로드"]::after {
+  content: "" !important;
+  position: absolute !important;
+  top: -2px !important;
+  left: -2px !important;
+  right: -2px !important;
+  bottom: -2px !important;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.3),
+    rgba(16, 185, 129, 0.3)
+  ) !important;
+  border-radius: 8px !important;
+  z-index: -1 !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.w-md-editor-toolbar button[aria-label="이미지 업로드"]:hover::after {
+  opacity: 1 !important;
 }
 
 /* 미리보기 영역 스타일 */
@@ -78,7 +178,29 @@ body {
 .w-md-editor-preview h4,
 .w-md-editor-preview h5,
 .w-md-editor-preview h6 {
-  color: #60a5fa !important;
+  color: #f3f4f6 !important;
+  font-weight: 600 !important;
+}
+
+.w-md-editor-preview h1 {
+  font-size: 2rem !important;
+  color: #f9fafb !important;
+}
+
+.w-md-editor-preview h2 {
+  font-size: 1.5rem !important;
+  color: #f3f4f6 !important;
+}
+
+.w-md-editor-preview h3 {
+  font-size: 1.25rem !important;
+  color: #e5e7eb !important;
+}
+
+.w-md-editor-preview h4,
+.w-md-editor-preview h5,
+.w-md-editor-preview h6 {
+  color: #d1d5db !important;
 }
 
 .w-md-editor-preview code {
@@ -118,10 +240,26 @@ body {
 .w-md-editor-preview h1,
 .w-md-editor-preview h2,
 .w-md-editor-preview h3 {
-  color: #60a5fa !important;
+  color: #f3f4f6 !important;
   border-bottom: 1px solid #374151;
   padding-bottom: 8px;
   margin-bottom: 16px;
+  font-weight: 600 !important;
+}
+
+.w-md-editor-preview h1 {
+  font-size: 2rem !important;
+  color: #f9fafb !important;
+}
+
+.w-md-editor-preview h2 {
+  font-size: 1.5rem !important;
+  color: #f3f4f6 !important;
+}
+
+.w-md-editor-preview h3 {
+  font-size: 1.25rem !important;
+  color: #e5e7eb !important;
 }
 
 .w-md-editor-preview img {
@@ -130,11 +268,63 @@ body {
   border-radius: 8px !important;
   margin: 16px 0 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  display: block !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
 }
 
 .w-md-editor-preview p {
   line-height: 1.6 !important;
   margin-bottom: 16px !important;
+}
+
+/* 리스트 스타일 추가 */
+.w-md-editor-preview ul {
+  list-style-type: disc !important;
+  margin-left: 20px !important;
+  margin-bottom: 16px !important;
+  padding-left: 0 !important;
+}
+
+.w-md-editor-preview ol {
+  list-style-type: decimal !important;
+  margin-left: 20px !important;
+  margin-bottom: 16px !important;
+  padding-left: 0 !important;
+}
+
+.w-md-editor-preview li {
+  margin-bottom: 8px !important;
+  line-height: 1.6 !important;
+  color: #f3f4f6 !important;
+}
+
+.w-md-editor-preview ul li {
+  list-style-type: disc !important;
+  display: list-item !important;
+}
+
+.w-md-editor-preview ol li {
+  list-style-type: decimal !important;
+  display: list-item !important;
+}
+
+/* 중첩된 리스트 스타일 */
+.w-md-editor-preview ul ul {
+  list-style-type: circle !important;
+  margin-top: 8px !important;
+}
+
+.w-md-editor-preview ul ul ul {
+  list-style-type: square !important;
+}
+
+.w-md-editor-preview ol ol {
+  list-style-type: lower-alpha !important;
+  margin-top: 8px !important;
+}
+
+.w-md-editor-preview ol ol ol {
+  list-style-type: lower-roman !important;
 }
 
 .w-md-editor-preview code {
@@ -150,6 +340,87 @@ body {
   border-radius: 8px !important;
   padding: 16px !important;
   overflow-x: auto !important;
+}
+
+/* 마크다운 에디터 내부 이미지 스타일 강화 */
+.w-md-editor-preview [alt]:not([alt=""]) {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.w-md-editor-preview img[src*="amazonaws.com"] {
+  border: 2px solid rgba(34, 197, 94, 0.4) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 이미지 로딩 중 스타일 */
+.w-md-editor-preview img[alt*="업로드 중"] {
+  opacity: 0.5 !important;
+  animation: pulse 1.5s infinite !important;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* 이미지 강제 렌더링 스타일 */
+.w-md-editor-preview img {
+  display: block !important;
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 8px !important;
+  margin: 16px 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  object-fit: cover !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 이미지 로드 실패 시 스타일 */
+.w-md-editor-preview img:not([src]),
+.w-md-editor-preview img[src=""] {
+  display: none !important;
+}
+
+/* 이미지 URL이 있는 경우 강제 표시 */
+.w-md-editor-preview img[src^="http"],
+.w-md-editor-preview img[src^="https"] {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  min-height: 100px !important;
+  border: 2px dashed rgba(59, 130, 246, 0.3) !important;
+}
+
+/* 이미지 로드 완료 시 스타일 */
+.w-md-editor-preview img[src^="http"]:loaded,
+.w-md-editor-preview img[src^="https"]:loaded {
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  min-height: auto !important;
+}
+
+/* CORS 에러 방지를 위한 스타일 */
+.w-md-editor-preview img {
+  crossorigin: anonymous !important;
+}
+
+/* 이미지 플레이스홀더 스타일 */
+.w-md-editor-preview img::before {
+  content: "🖼️ 이미지 로딩 중..." !important;
+  display: block !important;
+  text-align: center !important;
+  color: #9ca3af !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  padding: 20px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
 }
 
 /* 커스텀 스크롤바 스타일 */
