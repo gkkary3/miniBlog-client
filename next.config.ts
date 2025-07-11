@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      // 개발 환경에서 localhost 허용
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "4000",
+        pathname: "/**",
+      },
     ],
   },
   /* config options here */

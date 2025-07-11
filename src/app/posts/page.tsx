@@ -57,6 +57,14 @@ export default function PostsPage() {
     );
   };
 
+  // 게시글 내용에서 첫 번째 이미지 URL 추출 함수
+  const extractFirstImage = (content: string): string | null => {
+    // 마크다운 이미지 문법 ![alt](url) 매칭
+    const imageRegex = /!\[.*?\]\((.*?)\)/;
+    const match = content.match(imageRegex);
+    return match ? match[1] : null;
+  };
+
   const handlePostClick = (post: SearchPost) => {
     router.push(`/posts/${post.user.userId}/${post.id}`);
   };
@@ -354,27 +362,53 @@ export default function PostsPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 flex items-center justify-center border border-gray-700/50 relative overflow-hidden">
-                          {/* 배경 패턴 */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-purple-900/10"></div>
-                          <div className="absolute top-2 right-2 text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">
-                            미리보기
-                          </div>
+                        (() => {
+                          // 게시글 내용에서 첫 번째 이미지 추출
+                          const firstImage = extractFirstImage(post.content);
 
-                          {/* 게시글 내용 미리보기 */}
-                          <div className="relative z-10 p-4 w-full h-full flex flex-col justify-center">
-                            <div className="text-gray-300 text-sm leading-relaxed line-clamp-6 text-center">
-                              {(() => {
-                                const cleanContent = stripMarkdown(
-                                  post.content
-                                );
-                                return cleanContent.length > 200
-                                  ? cleanContent.substring(0, 200) + "..."
-                                  : cleanContent || "내용이 없습니다.";
-                              })()}
-                            </div>
-                          </div>
-                        </div>
+                          if (firstImage) {
+                            // 첫 번째 이미지가 있으면 이미지 표시
+                            return (
+                              <div className="relative w-full h-full">
+                                <Image
+                                  src={firstImage}
+                                  alt={`${post.title} 첫 번째 이미지`}
+                                  width={400}
+                                  height={200}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+                                  내용 이미지
+                                </div>
+                              </div>
+                            );
+                          } else {
+                            // 이미지가 없으면 텍스트 미리보기 표시
+                            return (
+                              <div className="w-full h-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 flex items-center justify-center border border-gray-700/50 relative overflow-hidden">
+                                {/* 배경 패턴 */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 to-purple-900/10"></div>
+                                <div className="absolute top-2 right-2 text-xs text-gray-500 bg-black/30 px-2 py-1 rounded">
+                                  미리보기
+                                </div>
+
+                                {/* 게시글 내용 미리보기 */}
+                                <div className="relative z-10 p-4 w-full h-full flex flex-col justify-center">
+                                  <div className="text-gray-300 text-sm leading-relaxed line-clamp-6 text-center">
+                                    {(() => {
+                                      const cleanContent = stripMarkdown(
+                                        post.content
+                                      );
+                                      return cleanContent.length > 200
+                                        ? cleanContent.substring(0, 200) + "..."
+                                        : cleanContent || "내용이 없습니다.";
+                                    })()}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+                        })()
                       )}
                     </div>
 
