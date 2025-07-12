@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PostListSkeleton } from "../components/Skeleton";
 
 export default function Home() {
   const router = useRouter();
@@ -11,8 +12,10 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p>리다이렉트 중...</p>
+    <div className="min-h-screen bg-black/80">
+      <div className="container mx-auto px-4 py-8 max-w-[1400px]">
+        <PostListSkeleton count={8} />
+      </div>
     </div>
   );
 }
