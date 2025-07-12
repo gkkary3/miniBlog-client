@@ -213,11 +213,6 @@ export default function RegisterPage() {
         <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl p-8">
           {/* 헤더 */}
           <div className="text-center mb-8">
-            <div className="mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-600 rounded-full mx-auto flex items-center justify-center mb-4">
-                <span className="text-2xl">✨</span>
-              </div>
-            </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-600 bg-clip-text text-transparent mb-2">
               회원가입
             </h1>
@@ -274,7 +269,6 @@ export default function RegisterPage() {
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1 flex items-center">
-                <span className="mr-1">💡</span>
                 영문, 숫자로만 구성된 고유한 ID를 입력하세요
               </p>
             </div>
@@ -337,7 +331,6 @@ export default function RegisterPage() {
                 <div className="mt-2 p-2 bg-green-900/20 border border-green-700/50 rounded-md">
                   <div className="flex items-center justify-between">
                     <p className="text-green-400 text-sm flex items-center">
-                      <span className="mr-1">✅</span>
                       {verificationSuccess}
                     </p>
                     {countdown > 0 && (
@@ -402,7 +395,6 @@ export default function RegisterPage() {
               {isVerificationVerified && (
                 <div className="mt-2 p-2 bg-green-900/20 border border-green-700/50 rounded-md">
                   <p className="text-green-400 text-sm flex items-center">
-                    <span className="mr-1">✅</span>
                     이메일 인증이 완료되었습니다
                   </p>
                 </div>
@@ -412,7 +404,6 @@ export default function RegisterPage() {
               {verificationError && (
                 <div className="mt-2 p-2 bg-red-900/20 border border-red-700/50 rounded-md">
                   <p className="text-red-400 text-sm flex items-center">
-                    <span className="mr-1">❌</span>
                     {verificationError}
                   </p>
                 </div>
@@ -456,7 +447,7 @@ export default function RegisterPage() {
                       }`}
                     >
                       <span className="mr-1">
-                        {validatePassword(password).minLength ? "✅" : "❌"}
+                        {validatePassword(password).minLength ? "●" : "○"}
                       </span>
                       8자 이상
                     </div>
@@ -468,7 +459,7 @@ export default function RegisterPage() {
                       }`}
                     >
                       <span className="mr-1">
-                        {validatePassword(password).hasLetter ? "✅" : "❌"}
+                        {validatePassword(password).hasLetter ? "●" : "○"}
                       </span>
                       영문 포함
                     </div>
@@ -480,7 +471,7 @@ export default function RegisterPage() {
                       }`}
                     >
                       <span className="mr-1">
-                        {validatePassword(password).hasNumber ? "✅" : "❌"}
+                        {validatePassword(password).hasNumber ? "●" : "○"}
                       </span>
                       숫자 포함
                     </div>
@@ -492,9 +483,7 @@ export default function RegisterPage() {
                       }`}
                     >
                       <span className="mr-1">
-                        {validatePassword(password).hasSpecialChar
-                          ? "✅"
-                          : "❌"}
+                        {validatePassword(password).hasSpecialChar ? "●" : "○"}
                       </span>
                       특수문자 포함
                     </div>
@@ -546,7 +535,7 @@ export default function RegisterPage() {
                     }`}
                   >
                     <span className="mr-1">
-                      {password === confirmPassword ? "✅" : "❌"}
+                      {password === confirmPassword ? "●" : "○"}
                     </span>
                     {password === confirmPassword
                       ? "비밀번호가 일치합니다"
@@ -560,7 +549,6 @@ export default function RegisterPage() {
             {error && (
               <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
                 <div className="flex items-center">
-                  <span className="text-red-400 mr-2">⚠️</span>
                   <p className="text-red-400 text-sm">{error}</p>
                 </div>
               </div>
@@ -616,7 +604,7 @@ export default function RegisterPage() {
         {/* 하단 추가 정보 */}
         <div className="text-center mt-6">
           <p className="text-gray-500 text-sm">
-            가입하여 나만의 블로그를 만들어보세요 🚀
+            가입하여 나만의 블로그를 만들어보세요
           </p>
         </div>
       </div>

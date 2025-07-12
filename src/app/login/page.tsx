@@ -36,7 +36,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black/80 text-white flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-black/80 text-white flex items-center justify-center relative overflow-hidden py-12">
       {/* 배경 장식 요소들 */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-600/10 to-purple-600/10 rounded-full blur-3xl"></div>
@@ -48,11 +48,6 @@ export default function LoginPage() {
         <div className="bg-black/40 backdrop-blur-xl rounded-2xl border border-gray-700/50 shadow-2xl p-8">
           {/* 헤더 */}
           <div className="text-center mb-8">
-            <div className="mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mx-auto flex items-center justify-center mb-4">
-                <span className="text-2xl">🔐</span>
-              </div>
-            </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">
               로그인
             </h1>
@@ -115,7 +110,6 @@ export default function LoginPage() {
             {error && (
               <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
                 <div className="flex items-center">
-                  <span className="text-red-400 mr-2">⚠️</span>
                   <p className="text-red-400 text-sm">{error}</p>
                 </div>
               </div>
@@ -147,7 +141,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* 🆕 OAuth 로그인 버튼들 */}
+            {/* OAuth 로그인 버튼들 */}
             <div className="space-y-3">
               {/* Google 로그인 버튼 */}
               <button
@@ -211,7 +205,7 @@ export default function LoginPage() {
         {/* 하단 추가 정보 */}
         <div className="text-center mt-6">
           <p className="text-gray-500 text-sm">
-            로그인하여 멋진 블로그 여정을 시작하세요 ✨
+            로그인하여 멋진 블로그 여정을 시작하세요
           </p>
         </div>
       </div>

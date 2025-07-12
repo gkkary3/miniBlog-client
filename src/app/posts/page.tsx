@@ -99,102 +99,77 @@ export default function PostsPage() {
         <div className="text-center mb-12 relative">
           {/* 백그라운드 패턴 - 상단만 */}
           <div className="absolute top-0 left-0 right-0 h-48 overflow-hidden rounded-3xl -z-10">
-            {/* 글로벌 네트워크 패턴 - 더 선명하게 */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-800/40 via-purple-800/50 to-blue-800/40"></div>
+            {/* 검은색 배경 */}
+            <div className="absolute inset-0 bg-black/80"></div>
 
-            {/* 연결된 점들 - 네트워크 노드 (더 밝게) */}
-            <div className="absolute top-1/4 left-1/4 w-3 h-3 bg-blue-400 rounded-full animate-pulse shadow-2xl shadow-blue-400/60 ring-2 ring-blue-400/30"></div>
-            <div className="absolute top-1/3 right-1/3 w-2.5 h-2.5 bg-purple-400 rounded-full animate-pulse delay-1000 shadow-2xl shadow-purple-400/60 ring-2 ring-purple-400/30"></div>
-            <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-blue-300 rounded-full animate-pulse delay-2000 shadow-2xl shadow-blue-300/60 ring-1 ring-blue-300/40"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-2.5 h-2.5 bg-purple-300 rounded-full animate-pulse delay-500 shadow-2xl shadow-purple-300/60 ring-2 ring-purple-300/30"></div>
-            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-1500 shadow-2xl shadow-blue-500/60 ring-1 ring-blue-500/40"></div>
-            <div className="absolute top-2/3 left-1/5 w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-700 shadow-2xl shadow-indigo-400/60 ring-1 ring-indigo-400/40"></div>
-            <div className="absolute bottom-1/5 right-1/5 w-2.5 h-2.5 bg-violet-400 rounded-full animate-pulse delay-1200 shadow-2xl shadow-violet-400/60 ring-2 ring-violet-400/30"></div>
+            {/* 플로팅 카드들 - 블로그 포스트를 연상시키는 카드들 (매우 진하게) */}
+            <div
+              className="absolute top-4 left-8 w-16 h-12 bg-gradient-to-br from-white/80 to-white/60 rounded-lg backdrop-blur-sm border-2 border-white/80 transform rotate-12 animate-bounce shadow-2xl"
+              style={{ animationDelay: "0s", animationDuration: "3s" }}
+            ></div>
+            <div
+              className="absolute top-12 right-12 w-20 h-14 bg-gradient-to-br from-blue-400/80 to-cyan-400/60 rounded-lg backdrop-blur-sm border-2 border-blue-300/80 transform -rotate-6 animate-pulse shadow-2xl"
+              style={{ animationDelay: "1s", animationDuration: "4s" }}
+            ></div>
+            <div
+              className="absolute bottom-8 left-16 w-18 h-13 bg-gradient-to-br from-emerald-400/80 to-teal-400/60 rounded-lg backdrop-blur-sm border-2 border-emerald-300/80 transform rotate-3 animate-bounce shadow-2xl"
+              style={{ animationDelay: "2s", animationDuration: "5s" }}
+            ></div>
+            <div
+              className="absolute bottom-16 right-8 w-14 h-10 bg-gradient-to-br from-violet-400/80 to-purple-400/60 rounded-lg backdrop-blur-sm border-2 border-violet-300/80 transform -rotate-12 animate-pulse shadow-2xl"
+              style={{ animationDelay: "0.5s", animationDuration: "3.5s" }}
+            ></div>
+            <div
+              className="absolute top-20 left-1/2 w-12 h-16 bg-gradient-to-br from-rose-400/80 to-pink-400/60 rounded-lg backdrop-blur-sm border-2 border-rose-300/80 transform rotate-45 animate-bounce shadow-2xl"
+              style={{ animationDelay: "1.5s", animationDuration: "4.5s" }}
+            ></div>
+            <div
+              className="absolute top-8 left-1/3 w-10 h-8 bg-gradient-to-br from-amber-400/80 to-orange-400/60 rounded-lg backdrop-blur-sm border-2 border-amber-300/80 transform -rotate-30 animate-pulse shadow-2xl"
+              style={{ animationDelay: "2.5s", animationDuration: "6s" }}
+            ></div>
+            <div
+              className="absolute bottom-12 right-1/3 w-16 h-11 bg-gradient-to-br from-indigo-400/80 to-blue-400/60 rounded-lg backdrop-blur-sm border-2 border-indigo-300/80 transform rotate-18 animate-bounce shadow-2xl"
+              style={{ animationDelay: "0.8s", animationDuration: "3.8s" }}
+            ></div>
 
-            {/* 연결선들 - SVG 곡선 (더 선명하게) */}
-            <svg
-              className="absolute inset-0 w-full h-full opacity-70"
-              viewBox="0 0 400 180"
+            {/* 떠다니는 글자들 - 블로그 키워드 (매우 진하게) */}
+            <div
+              className="absolute top-6 right-20 text-white text-sm font-bold transform rotate-12 animate-pulse bg-black/30 px-2 py-1 rounded-md"
+              style={{ animationDelay: "1s", animationDuration: "2s" }}
             >
-              <defs>
-                <linearGradient
-                  id="lineGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.8" />
-                  <stop offset="50%" stopColor="#a855f7" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.8" />
-                </linearGradient>
-                <linearGradient
-                  id="lineGradient2"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.7" />
-                  <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.7" />
-                </linearGradient>
-              </defs>
-              {/* 주요 연결선들 */}
-              <path
-                d="M100,45 Q200,30 300,60"
-                stroke="url(#lineGradient)"
-                strokeWidth="3"
-                fill="none"
-                className="animate-pulse"
-              />
-              <path
-                d="M80,120 Q180,100 280,130"
-                stroke="url(#lineGradient)"
-                strokeWidth="2"
-                fill="none"
-              />
-              <path
-                d="M50,80 Q150,65 250,95"
-                stroke="url(#lineGradient2)"
-                strokeWidth="2"
-                fill="none"
-              />
-              <path
-                d="M120,150 Q220,135 320,165"
-                stroke="url(#lineGradient2)"
-                strokeWidth="1.5"
-                fill="none"
-              />
-              {/* 보조 연결선들 */}
-              <path
-                d="M40,60 Q140,45 240,75"
-                stroke="url(#lineGradient)"
-                strokeWidth="1.5"
-                fill="none"
-                opacity="0.8"
-              />
-              <path
-                d="M160,40 Q260,55 360,85"
-                stroke="url(#lineGradient2)"
-                strokeWidth="1.5"
-                fill="none"
-                opacity="0.7"
-              />
-            </svg>
+              Blog
+            </div>
+            <div
+              className="absolute bottom-6 left-12 text-white text-sm font-bold transform -rotate-6 animate-pulse bg-black/30 px-2 py-1 rounded-md"
+              style={{ animationDelay: "2s", animationDuration: "3s" }}
+            >
+              Write
+            </div>
+            <div
+              className="absolute top-16 left-1/4 text-white text-sm font-bold transform rotate-30 animate-pulse bg-black/30 px-2 py-1 rounded-md"
+              style={{ animationDelay: "0.5s", animationDuration: "2.5s" }}
+            >
+              Story
+            </div>
+            <div
+              className="absolute bottom-20 right-1/4 text-white text-sm font-bold transform -rotate-15 animate-pulse bg-black/30 px-2 py-1 rounded-md"
+              style={{ animationDelay: "1.8s", animationDuration: "4s" }}
+            >
+              Share
+            </div>
 
-            {/* 그라데이션 오버레이로 깊이감 연출 (약간 줄임) */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
+            {/* 배경 오버레이 (검은색으로 조정) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/15"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-black/15"></div>
           </div>
 
           {/* 컨텐츠 */}
           <div className="relative z-20 py-12">
             {/* 장식 요소 */}
             <div className="flex items-center justify-center space-x-4 mb-8">
-              <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-blue-400/60"></div>
-              <div className="w-2 h-2 bg-blue-400/80 rounded-full animate-pulse"></div>
-              <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-blue-400/60"></div>
+              <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-purple-400/80"></div>
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse shadow-lg shadow-purple-400/60"></div>
+              <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-purple-400/80"></div>
             </div>
           </div>
 
