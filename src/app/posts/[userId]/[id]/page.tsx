@@ -311,16 +311,15 @@ export default function PostDetailPage({
             </div>
           )}
           {/* // 🆕 마크다운 렌더링 */}
-          <div className="prose prose-invert max-w-none">
-            <div className="w-full" data-color-mode="dark">
+          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl mb-8">
+            <div className="markdown-body">
               <MDEditor.Markdown
                 source={post.content}
                 style={{
                   backgroundColor: "transparent",
-                  color: "#f3f4f6",
-                  padding: "20px",
-                  borderRadius: "12px",
-                  border: "1px solid #374151",
+                  color: "inherit",
+                  padding: 0,
+                  border: "none",
                   minHeight: "200px",
                 }}
               />

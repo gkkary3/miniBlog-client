@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
+    domains: [
+      "velog.velcdn.com",
+      // 이미 등록된 다른 도메인도 여기에 추가
+    ],
     remotePatterns: [
       {
         protocol: "https",

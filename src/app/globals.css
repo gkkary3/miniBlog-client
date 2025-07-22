@@ -486,3 +486,48 @@ body {
   animation: float-slow 5s ease-in-out infinite;
   animation-delay: 2s;
 }
+
+/* 마크다운 상세보기 전용 스타일 */
+.markdown-body {
+  color: #f3f4f6;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  word-break: break-word;
+}
+.markdown-body ul,
+.markdown-body ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+.markdown-body ul {
+  list-style: disc;
+}
+.markdown-body ol {
+  list-style: decimal;
+}
+.markdown-body li {
+  margin-bottom: 0.3em;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.7em;
+}
+.markdown-body pre {
+  background: #181c23;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+.markdown-body code {
+  background: #23272e;
+  color: #fbbf24;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.95em;
+}
