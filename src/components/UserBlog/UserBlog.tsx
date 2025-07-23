@@ -197,8 +197,8 @@ export default function UserBlog({ userId }: { userId: string }) {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6 text-gray-400">
-                <span>📝 총 {total}개의 게시글</span>
-                {categories && <span>🏷️ {categories.length}개의 카테고리</span>}
+                {/* <span>📝 총 {total}개의 게시글</span> */}
+                {/* {categories && <span>🏷️ {categories.length}개의 카테고리</span>} */}
                 {selectedCategory && !searchQuery && (
                   <span className="text-blue-400">
                     현재: #{selectedCategory} 카테고리
@@ -333,8 +333,8 @@ export default function UserBlog({ userId }: { userId: string }) {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 text-gray-400">
-              <span>📝 총 {total}개의 게시글</span>
-              {categories && <span>🏷️ {categories.length}개의 카테고리</span>}
+              {/* <span>📝 총 {total}개의 게시글</span> */}
+              {/* {categories && <span>🏷️ {categories.length}개의 카테고리</span>} */}
               {selectedCategory && !searchQuery && (
                 <span className="text-blue-400">
                   현재: #{selectedCategory} 카테고리
