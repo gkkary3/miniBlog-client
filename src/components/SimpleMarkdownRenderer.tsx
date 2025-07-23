@@ -8,6 +8,81 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
+// 안전한 구문 강조 함수 (HTML 이스케이프 후 적용)
+function applySafeHighlighting(escapedCode: string, language: string): string {
+  let result = escapedCode;
+
+  // TypeScript/JavaScript 구문 강조
+  if (
+    language === "ts" ||
+    language === "typescript" ||
+    language === "js" ||
+    language === "javascript"
+  ) {
+    // 1. 키워드 강조 (이미 이스케이프된 텍스트에 안전하게 적용)
+    const keywords = [
+      "const",
+      "let",
+      "var",
+      "function",
+      "class",
+      "export",
+      "default",
+      "async",
+      "await",
+      "return",
+      "if",
+      "else",
+      "for",
+      "while",
+    ];
+    keywords.forEach((keyword) => {
+      // 단어 경계를 사용하여 정확한 매칭
+      const regex = new RegExp(`\\b${keyword}\\b`, "g");
+      result = result.replace(
+        regex,
+        `<span style="color: #a855f7; font-weight: 600;">${keyword}</span>`
+      );
+    });
+
+    // 2. 문자열 강조 (HTML 이스케이프된 따옴표 처리)
+    result = result.replace(
+      /&quot;([^&]*?)&quot;/g,
+      '<span style="color: #4ade80;">&quot;$1&quot;</span>'
+    );
+    result = result.replace(
+      /&#x27;([^&]*?)&#x27;/g,
+      '<span style="color: #4ade80;">&#x27;$1&#x27;</span>'
+    );
+
+    // 3. 숫자 강조
+    result = result.replace(
+      /\b(\d+(?:\.\d+)?)\b/g,
+      '<span style="color: #fb923c;">$1</span>'
+    );
+
+    // 4. 연산자 강조 (공백으로 둘러싸인 등호만)
+    result = result.replace(
+      /(\s)(=)(\s)/g,
+      '$1<span style="color: #d4d4d8;">$2</span>$3'
+    );
+
+    // 5. 주석 강조
+    result = result.replace(
+      /\/\/.*$/gm,
+      '<span style="color: #6b7280; font-style: italic;">$&</span>'
+    );
+  }
+
+  // 기본 색상 적용 (다른 언어나 언어 지정 없음)
+  else {
+    // 기본 회색 색상
+    result = `<span style="color: #d1d5db;">${result}</span>`;
+  }
+
+  return result;
+}
+
 export default function SimpleMarkdownRenderer({
   source,
   style,
@@ -104,17 +179,22 @@ export default function SimpleMarkdownRenderer({
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원 (구문 강조 비활성화)
+      // 코드 블록 복원 (안전한 구문 강조)
       codeBlocks.forEach((codeBlock, index) => {
         const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
+        const language = match?.[1] || "";
         const content = match?.[2]?.trim() || "";
 
-        // HTML 이스케이프만 적용
+        // HTML 이스케이프 후 안전한 구문 강조 적용
         const escapedContent = escapeHtml(content);
+        const highlightedContent = applySafeHighlighting(
+          escapedContent,
+          language
+        );
 
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
-          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0 border border-gray-700"><code class="text-gray-300 text-xs sm:text-sm font-mono leading-relaxed">${escapedContent}</code></pre>`
+          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0 border border-gray-700"><code class="text-xs sm:text-sm font-mono leading-relaxed">${highlightedContent}</code></pre>`
         );
       });
 
