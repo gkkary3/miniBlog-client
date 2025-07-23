@@ -8,8 +8,9 @@ import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
-import MDEditor from "@uiw/react-md-editor";
+import SafeMarkdownRenderer from "@/components/SafeMarkdownRenderer";
 import { PostDetailSkeleton } from "@/components/Skeleton";
+import SEO from "@/components/SEO";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -203,117 +204,127 @@ export default function PostDetailPage({
   }
 
   return (
-    <div className="min-h-screen bg-black/80 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* 네비게이션 */}
-        <div className="hidden flex items-center justify-between mb-8">
-          <Link
-            href="/posts"
-            className="text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center text-sm"
-          >
-            ← 전체 게시글 목록
-          </Link>
-        </div>
+    <>
+      <SEO
+        title={post.title}
+        description={post.content.substring(0, 160) + "..."}
+        keywords={["블로그", "개발", "게시글", post.user.username]}
+        url={`/posts/${resolvedParams.userId}/${resolvedParams.id}`}
+        type="article"
+        author={post.user.username}
+        publishedTime={post.createdAt}
+        modifiedTime={post.updatedAt}
+      />
+      <div className="min-h-screen bg-black/80 text-white">
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+          {/* 네비게이션 */}
+          <div className="hidden flex items-center justify-between mb-8">
+            <Link
+              href="/posts"
+              className="text-gray-400 hover:text-gray-300 transition-colors inline-flex items-center text-sm"
+            >
+              ← 전체 게시글 목록
+            </Link>
+          </div>
 
-        {/* 게시글 카드 */}
-        <article className="bg-black/40 rounded-lg p-8 mb-8">
-          {/* 작성자 정보 */}
-          <div className="flex items-center justify-between mb-6 p-4 bg-black/20 rounded-lg">
-            <div className="flex items-center space-x-4">
-              {post.user.profileImage ? (
-                <Image
-                  src={post.user.profileImage}
-                  alt={`${post.user.username} 프로필`}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">
-                    {post.user.username?.charAt(0).toUpperCase()}
-                  </span>
+          {/* 게시글 카드 */}
+          <article className="bg-black/40 rounded-lg p-8 mb-8">
+            {/* 작성자 정보 */}
+            <div className="flex items-center justify-between mb-6 p-4 bg-black/20 rounded-lg">
+              <div className="flex items-center space-x-4">
+                {post.user.profileImage ? (
+                  <Image
+                    src={post.user.profileImage}
+                    alt={`${post.user.username} 프로필`}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {post.user.username?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <Link
+                    href={`/posts/${resolvedParams.userId}`}
+                    className="text-blue-400 hover:text-blue-300 transition-colors font-semibold text-lg hover:underline cursor-pointer"
+                  >
+                    {post.user.username}
+                  </Link>
+                  <p className="text-gray-400 text-sm">
+                    📅{" "}
+                    {new Date(post.createdAt).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* 수정/삭제 버튼 - 작성자만 보이도록 */}
+              {isAuthenticated && post?.userId === currentUserId && (
+                <div className="flex items-center space-x-1 text-sm text-gray-400">
+                  <button
+                    onClick={() => router.push(`/write?id=${post.id}`)}
+                    className="hover:text-blue-400 transition-colors px-2 py-1"
+                  >
+                    수정
+                  </button>
+                  <span className="text-gray-600">|</span>
+                  <button
+                    onClick={() => handleDelete(post.id)}
+                    className="hover:text-red-400 transition-colors px-2 py-1"
+                  >
+                    삭제
+                  </button>
                 </div>
               )}
-              <div>
-                <Link
-                  href={`/posts/${resolvedParams.userId}`}
-                  className="text-blue-400 hover:text-blue-300 transition-colors font-semibold text-lg hover:underline cursor-pointer"
-                >
-                  {post.user.username}
-                </Link>
-                <p className="text-gray-400 text-sm">
-                  📅{" "}
-                  {new Date(post.createdAt).toLocaleDateString("ko-KR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </div>
+            </div>
+            {/* 게시글 제목 */}
+            <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
+
+            {/* 좋아요 버튼 - 간단하게 */}
+            <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
+              <button
+                onClick={isLiked ? handleUnlike : handleLike}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm ${
+                  isLiked
+                    ? "text-red-400 hover:text-red-300"
+                    : "text-gray-400 hover:text-red-400"
+                }`}
+              >
+                <span className="text-base">{isLiked ? "❤️" : "🤍"}</span>
+                <span>{post.likedUsers.length}</span>
+              </button>
             </div>
 
-            {/* 수정/삭제 버튼 - 작성자만 보이도록 */}
-            {isAuthenticated && post?.userId === currentUserId && (
-              <div className="flex items-center space-x-1 text-sm text-gray-400">
-                <button
-                  onClick={() => router.push(`/write?id=${post.id}`)}
-                  className="hover:text-blue-400 transition-colors px-2 py-1"
-                >
-                  수정
-                </button>
-                <span className="text-gray-600">|</span>
-                <button
-                  onClick={() => handleDelete(post.id)}
-                  className="hover:text-red-400 transition-colors px-2 py-1"
-                >
-                  삭제
-                </button>
-              </div>
-            )}
-          </div>
-          {/* 게시글 제목 */}
-          <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
-
-          {/* 좋아요 버튼 - 간단하게 */}
-          <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
-            <button
-              onClick={isLiked ? handleUnlike : handleLike}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm ${
-                isLiked
-                  ? "text-red-400 hover:text-red-300"
-                  : "text-gray-400 hover:text-red-400"
-              }`}
-            >
-              <span className="text-base">{isLiked ? "❤️" : "🤍"}</span>
-              <span>{post.likedUsers.length}</span>
-            </button>
-          </div>
-
-          {/* 게시글 내용 */}
-          {/* <div className="prose prose-invert max-w-none">
+            {/* 게시글 내용 */}
+            {/* <div className="prose prose-invert max-w-none">
             <div className="text-gray-300 leading-relaxed whitespace-pre-wrap text-lg">
               {post.content}
             </div>
           </div> */}
 
-          {/* 썸네일 이미지 */}
-          {post.thumbnail && (
-            <div className="mb-8">
-              <Image
-                src={post.thumbnail}
-                alt={`${post.title} 썸네일`}
-                width={600}
-                height={300}
-                className="w-full max-w-2xl mx-auto rounded-xl object-cover shadow-lg"
-                priority
-              />
-            </div>
-          )}
-          {/* // 🆕 마크다운 렌더링 */}
-          <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl mb-8">
-            <div className="markdown-body">
-              <MDEditor.Markdown
+            {/* 썸네일 이미지 */}
+            {post.thumbnail && (
+              <div className="mb-8">
+                <Image
+                  src={post.thumbnail}
+                  alt={`${post.title} 썸네일`}
+                  width={600}
+                  height={300}
+                  className="w-full max-w-2xl mx-auto rounded-xl object-cover shadow-lg"
+                  priority
+                />
+              </div>
+            )}
+            {/* // 🆕 마크다운 렌더링 */}
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl mb-8">
+              <SafeMarkdownRenderer
                 source={post.content}
                 style={{
                   backgroundColor: "transparent",
@@ -324,17 +335,17 @@ export default function PostDetailPage({
                 }}
               />
             </div>
-          </div>
-        </article>
+          </article>
 
-        {/* 댓글 섹션 */}
-        <div className="bg-black/40 rounded-lg p-8">
-          <CommentSection
-            userId={resolvedParams.userId}
-            postId={resolvedParams.id}
-          />
+          {/* 댓글 섹션 */}
+          <div className="bg-black/40 rounded-lg p-8">
+            <CommentSection
+              userId={resolvedParams.userId}
+              postId={resolvedParams.id}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -9,8 +9,23 @@ const nextConfig: NextConfig = {
       include: /node_modules/,
       type: "javascript/auto",
     });
+
+    // 모바일 호환성을 위한 웹팩 설정
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      os: false,
+    };
+
     return config;
   },
+  // 모바일 최적화 설정
+  experimental: {
+    optimizePackageImports: ["@uiw/react-md-editor"],
+  },
+  // 압축 설정
+  compress: true,
   images: {
     domains: [
       "velog.velcdn.com",
