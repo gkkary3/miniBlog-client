@@ -1,12 +1,13 @@
 {
-  "name": "miniblog-client",
+  "name": "boolog-client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sitemap": "next build && next export"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.80.7",
