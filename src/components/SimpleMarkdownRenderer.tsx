@@ -8,9 +8,9 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
-// 안전한 구문 강조 함수 (완전히 새로운 안전한 방식)
-function applySafeHighlighting(escapedCode: string, language: string): string {
-  // 언어 정규화 (js -> javascript)
+// 구문 강조 우선 적용 함수 (HTML 이스케이프 이전에 처리)
+function applyHighlightingFirst(code: string, language: string): string {
+  // 언어 정규화
   const normalizedLanguage = language.toLowerCase();
   const isJavaScript =
     normalizedLanguage === "js" ||
@@ -18,76 +18,95 @@ function applySafeHighlighting(escapedCode: string, language: string): string {
     normalizedLanguage === "ts" ||
     normalizedLanguage === "typescript";
 
+  // HTML 특수 문자 먼저 이스케이프
+  const escapeHtml = (text: string) => {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
   if (!isJavaScript) {
-    // JavaScript/TypeScript가 아닌 경우 기본 회색으로 표시
-    return `<span class="text-gray-300">${escapedCode}</span>`;
+    // JavaScript/TypeScript가 아닌 경우 기본 이스케이프만
+    return escapeHtml(code);
   }
 
-  // JavaScript/TypeScript 구문 강조 (매우 안전한 방식)
-  let result = escapedCode;
-
   try {
-    // 1. 키워드 강조 - 각각 개별적으로 안전하게 처리
-    const keywords = {
-      const: "text-purple-400",
-      let: "text-purple-400",
-      var: "text-purple-400",
-      function: "text-purple-400",
-      class: "text-purple-400",
-      export: "text-purple-400",
-      default: "text-purple-400",
-      async: "text-purple-400",
-      await: "text-purple-400",
-      return: "text-purple-400",
-      if: "text-purple-400",
-      else: "text-purple-400",
-      for: "text-purple-400",
-      while: "text-purple-400",
-    };
+    let result = code;
 
-    // 키워드를 하나씩 안전하게 처리
-    Object.entries(keywords).forEach(([keyword, colorClass]) => {
-      const safeRegex = new RegExp(`\\b${keyword}\\b`, "g");
+    // 1. 키워드 강조 (이스케이프 이전에 처리)
+    const keywords = [
+      "const",
+      "let",
+      "var",
+      "function",
+      "class",
+      "export",
+      "default",
+      "async",
+      "await",
+      "return",
+      "if",
+      "else",
+      "for",
+      "while",
+    ];
+
+    keywords.forEach((keyword) => {
+      const regex = new RegExp(`\\b${keyword}\\b`, "g");
       result = result.replace(
-        safeRegex,
-        `<span class="${colorClass} font-semibold">${keyword}</span>`
+        regex,
+        `__KEYWORD_START__${keyword}__KEYWORD_END__`
       );
     });
 
-    // 2. 문자열 강조 (이스케이프된 따옴표 처리)
-    result = result.replace(
-      /&quot;([^&]*?)&quot;/g,
-      '<span class="text-green-400">&quot;$1&quot;</span>'
-    );
-    result = result.replace(
-      /&#x27;([^&]*?)&#x27;/g,
-      '<span class="text-green-400">&#x27;$1&#x27;</span>'
-    );
+    // 2. 문자열 강조 (이스케이프 이전에 처리)
+    result = result.replace(/"([^"]*)"/g, '__STRING_START__"$1"__STRING_END__');
+    result = result.replace(/'([^']*)'/g, "__STRING_START__'$1'__STRING_END__");
 
     // 3. 숫자 강조
     result = result.replace(
       /\b(\d+(?:\.\d+)?)\b/g,
-      '<span class="text-orange-400">$1</span>'
+      "__NUMBER_START__$1__NUMBER_END__"
     );
 
     // 4. 등호 연산자 강조
     result = result.replace(
       /(\s)(=)(\s)/g,
-      '$1<span class="text-gray-300">$2</span>$3'
+      "$1__OPERATOR_START__$2__OPERATOR_END__$3"
     );
 
     // 5. 주석 강조
+    result = result.replace(/\/\/.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+
+    // 6. HTML 이스케이프 적용
+    result = escapeHtml(result);
+
+    // 7. 플레이스홀더를 실제 HTML 태그로 변환
     result = result.replace(
-      /\/\/.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
+      /__KEYWORD_START__(.*?)__KEYWORD_END__/g,
+      '<span class="text-purple-400 font-semibold">$1</span>'
+    );
+    result = result.replace(
+      /__STRING_START__(.*?)__STRING_END__/g,
+      '<span class="text-green-400">$1</span>'
+    );
+    result = result.replace(
+      /__NUMBER_START__(.*?)__NUMBER_END__/g,
+      '<span class="text-orange-400">$1</span>'
+    );
+    result = result.replace(
+      /__OPERATOR_START__(.*?)__OPERATOR_END__/g,
+      '<span class="text-gray-300">$1</span>'
+    );
+    result = result.replace(
+      /__COMMENT_START__(.*?)__COMMENT_END__/g,
+      '<span class="text-gray-500 italic">$1</span>'
     );
 
-    // 6. 나머지 텍스트는 기본 색상
-    return `<span class="text-gray-300">${result}</span>`;
+    return result;
   } catch (error) {
     console.error("Highlighting error:", error);
-    // 에러 발생 시 기본 색상으로 표시
-    return `<span class="text-gray-300">${escapedCode}</span>`;
+    return escapeHtml(code);
   }
 }
 
@@ -187,18 +206,14 @@ export default function SimpleMarkdownRenderer({
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원 (안전한 구문 강조)
+      // 코드 블록 복원 (구문 강조 우선 적용)
       codeBlocks.forEach((codeBlock, index) => {
         const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
         const language = match?.[1] || "";
         const content = match?.[2]?.trim() || "";
 
-        // HTML 이스케이프 후 안전한 구문 강조 적용
-        const escapedContent = escapeHtml(content);
-        const highlightedContent = applySafeHighlighting(
-          escapedContent,
-          language
-        );
+        // 구문 강조를 먼저 적용한 후 HTML 이스케이프
+        const highlightedContent = applyHighlightingFirst(content, language);
 
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
