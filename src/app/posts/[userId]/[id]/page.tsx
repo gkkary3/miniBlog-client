@@ -216,7 +216,7 @@ export default function PostDetailPage({
         modifiedTime={post.updatedAt}
       />
       <div className="min-h-screen bg-black/80 text-white">
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-5xl">
           {/* 네비게이션 */}
           <div className="hidden flex items-center justify-between mb-8">
             <Link
@@ -228,9 +228,9 @@ export default function PostDetailPage({
           </div>
 
           {/* 게시글 카드 */}
-          <article className="bg-black/40 rounded-lg p-8 mb-8">
+          <article className="bg-black/40 rounded-lg p-3 sm:p-8 mb-4 sm:mb-8">
             {/* 작성자 정보 */}
-            <div className="flex items-center justify-between mb-6 p-4 bg-black/20 rounded-lg">
+            <div className="flex items-center justify-between mb-4 sm:mb-6 p-2 sm:p-4 bg-black/20 rounded-lg">
               <div className="flex items-center space-x-4">
                 {post.user.profileImage ? (
                   <Image
@@ -267,17 +267,17 @@ export default function PostDetailPage({
 
               {/* 수정/삭제 버튼 - 작성자만 보이도록 */}
               {isAuthenticated && post?.userId === currentUserId && (
-                <div className="flex items-center space-x-1 text-sm text-gray-400">
+                <div className="flex items-center space-x-1 text-xs sm:text-sm text-gray-400">
                   <button
                     onClick={() => router.push(`/write?id=${post.id}`)}
-                    className="hover:text-blue-400 transition-colors px-2 py-1"
+                    className="hover:text-blue-400 transition-colors px-1 sm:px-2 py-1 whitespace-nowrap"
                   >
                     수정
                   </button>
                   <span className="text-gray-600">|</span>
                   <button
                     onClick={() => handleDelete(post.id)}
-                    className="hover:text-red-400 transition-colors px-2 py-1"
+                    className="hover:text-red-400 transition-colors px-1 sm:px-2 py-1 whitespace-nowrap"
                   >
                     삭제
                   </button>
@@ -285,10 +285,12 @@ export default function PostDetailPage({
               )}
             </div>
             {/* 게시글 제목 */}
-            <h1 className="text-4xl font-bold mb-8 text-white">{post.title}</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-8 text-white leading-tight">
+              {post.title}
+            </h1>
 
             {/* 좋아요 버튼 - 간단하게 */}
-            <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-700">
+            <div className="flex items-center space-x-4 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b border-gray-700">
               <button
                 onClick={isLiked ? handleUnlike : handleLike}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm ${
@@ -311,7 +313,7 @@ export default function PostDetailPage({
 
             {/* 썸네일 이미지 */}
             {post.thumbnail && (
-              <div className="mb-8">
+              <div className="mb-4 sm:mb-8">
                 <Image
                   src={post.thumbnail}
                   alt={`${post.title} 썸네일`}
@@ -323,7 +325,7 @@ export default function PostDetailPage({
               </div>
             )}
             {/* // 🆕 마크다운 렌더링 */}
-            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl mb-8">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl mb-4 sm:mb-8">
               <SimpleMarkdownRenderer
                 source={post.content}
                 style={{
@@ -338,7 +340,7 @@ export default function PostDetailPage({
           </article>
 
           {/* 댓글 섹션 */}
-          <div className="bg-black/40 rounded-lg p-8">
+          <div className="bg-black/40 rounded-lg p-3 sm:p-8">
             <CommentSection
               userId={resolvedParams.userId}
               postId={resolvedParams.id}

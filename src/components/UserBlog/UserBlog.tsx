@@ -256,7 +256,7 @@ export default function UserBlog({ userId }: { userId: string }) {
 
   return (
     <div className="min-h-screen bg-black/80 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-[1200px]">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-[1200px]">
         <div className="mb-8">
           <div className="flex flex-col items-center mb-6">
             {userInfo?.profileImage ? (
@@ -331,7 +331,7 @@ export default function UserBlog({ userId }: { userId: string }) {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
             <div className="flex items-center gap-6 text-gray-400">
               {/* <span>📝 총 {total}개의 게시글</span> */}
               {/* {categories && <span>🏷️ {categories.length}개의 카테고리</span>} */}
@@ -349,19 +349,19 @@ export default function UserBlog({ userId }: { userId: string }) {
                 </span>
               )}
             </div>
-            <div className="w-64">
+            <div className="w-full sm:w-64">
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchInput}
                 onChange={handleSearchChange}
                 placeholder="게시글 검색..."
-                className="w-full px-4 py-2 bg-black/40 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full px-3 sm:px-4 py-2 bg-black/40 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm sm:text-base"
               />
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           <aside className="lg:col-span-1">
             <CategorySidebar
               categories={categories || []}

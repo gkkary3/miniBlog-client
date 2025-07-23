@@ -43,22 +43,22 @@ export default function SimpleMarkdownRenderer({
       // 나머지 HTML 이스케이프
       html = escapeHtml(html);
 
-      // 헤더 처리
+      // 헤더 처리 (모바일 친화적 크기)
       html = html.replace(
         /^#### (.*)$/gm,
-        '<h4 class="text-base font-semibold mb-2 text-white mt-4">$1</h4>'
+        '<h4 class="text-sm sm:text-base font-semibold mb-2 text-white mt-3 sm:mt-4">$1</h4>'
       );
       html = html.replace(
         /^### (.*)$/gm,
-        '<h3 class="text-lg font-semibold mb-2 text-white mt-6">$1</h3>'
+        '<h3 class="text-base sm:text-lg font-semibold mb-2 text-white mt-4 sm:mt-6">$1</h3>'
       );
       html = html.replace(
         /^## (.*)$/gm,
-        '<h2 class="text-xl font-semibold mb-3 text-white mt-8">$1</h2>'
+        '<h2 class="text-lg sm:text-xl font-semibold mb-3 text-white mt-6 sm:mt-8">$1</h2>'
       );
       html = html.replace(
         /^# (.*)$/gm,
-        '<h1 class="text-2xl font-bold mb-4 text-white mt-8">$1</h1>'
+        '<h1 class="text-xl sm:text-2xl font-bold mb-4 text-white mt-6 sm:mt-8">$1</h1>'
       );
 
       // 볼드 처리
@@ -79,10 +79,10 @@ export default function SimpleMarkdownRenderer({
         '<a href="$2" class="text-blue-400 hover:text-blue-300 underline transition-colors" target="_blank" rel="noopener noreferrer">$1</a>'
       );
 
-      // 이미지 처리
+      // 이미지 처리 (모바일 최적화)
       html = html.replace(
         /!\[([^\]]*)\]\(([^)]+)\)/g,
-        '<div class="my-4"><img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-lg" loading="lazy" style="max-width: 100%; height: auto;" /></div>'
+        '<div class="my-3 sm:my-4 -mx-3 sm:mx-0"><img src="$2" alt="$1" class="w-full h-auto rounded-lg shadow-lg" loading="lazy" style="max-width: 100%; height: auto;" /></div>'
       );
 
       // 리스트 처리
@@ -104,7 +104,7 @@ export default function SimpleMarkdownRenderer({
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원
+      // 코드 블록 복원 (모바일 최적화)
       codeBlocks.forEach((codeBlock, index) => {
         const content = codeBlock
           .replace(/```(\w+)?\n?([\s\S]*?)```/g, "$2")
@@ -112,17 +112,17 @@ export default function SimpleMarkdownRenderer({
         const escapedContent = escapeHtml(content);
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
-          `<pre class="bg-gray-900 p-4 rounded-lg my-4 overflow-x-auto"><code class="text-green-400 text-sm font-mono">${escapedContent}</code></pre>`
+          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0"><code class="text-green-400 text-xs sm:text-sm font-mono">${escapedContent}</code></pre>`
         );
       });
 
-      // 인라인 코드 복원
+      // 인라인 코드 복원 (모바일 최적화)
       inlineCodes.forEach((inlineCode, index) => {
         const content = inlineCode.replace(/`([^`]+)`/g, "$1");
         const escapedContent = escapeHtml(content);
         html = html.replace(
           `__INLINE_CODE_${index}__`,
-          `<code class="bg-gray-800 px-2 py-1 rounded text-green-400 text-sm font-mono">${escapedContent}</code>`
+          `<code class="bg-gray-800 px-1 sm:px-2 py-1 rounded text-green-400 text-xs sm:text-sm font-mono">${escapedContent}</code>`
         );
       });
 
@@ -133,8 +133,11 @@ export default function SimpleMarkdownRenderer({
       );
       html = html.replace(/\n/g, "<br>");
 
-      // 단락 태그로 감싸기
-      html = '<p class="mb-4 text-gray-300 leading-relaxed">' + html + "</p>";
+      // 단락 태그로 감싸기 (모바일 최적화)
+      html =
+        '<p class="mb-3 sm:mb-4 text-gray-300 leading-relaxed text-sm sm:text-base">' +
+        html +
+        "</p>";
 
       // 빈 단락 제거
       html = html.replace(/<p[^>]*><\/p>/g, "");

@@ -80,11 +80,11 @@ export default function PostList({
           key={post.id}
           ref={index === filteredPosts.length - 1 ? lastElementRef : null}
           onClick={() => handlePostClick(post.id)}
-          className="bg-black/40 rounded-lg p-6 hover:bg-black/30 transition-colors cursor-pointer group"
+          className="bg-black/40 rounded-lg p-3 sm:p-6 hover:bg-black/30 transition-colors cursor-pointer group"
         >
           {/* 썸네일 */}
           {post.thumbnail && (
-            <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-800">
+            <div className="w-full h-32 sm:h-48 mb-3 sm:mb-4 rounded-lg overflow-hidden bg-gray-800">
               <img
                 src={post.thumbnail}
                 alt={post.title}
@@ -93,7 +93,7 @@ export default function PostList({
             </div>
           )}
 
-          <h2 className="text-2xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors">
+          <h2 className="text-lg sm:text-2xl font-bold mb-2 sm:mb-3 text-white group-hover:text-blue-400 transition-colors line-clamp-2">
             {post.title}
           </h2>
 

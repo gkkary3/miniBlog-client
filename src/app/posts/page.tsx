@@ -102,7 +102,7 @@ export default function PostsPage() {
         url="/posts"
       />
       <div className="min-h-screen bg-black/80 text-white">
-        <div className="container mx-auto px-4 py-8 max-w-[1400px]">
+        <div className="container mx-auto px-2 sm:px-4 py-8 max-w-[1400px]">
           {/* 헤더 */}
           <div className="text-center mb-12 relative">
             {/* 백그라운드 패턴 - 상단만 */}
@@ -330,16 +330,16 @@ export default function PostsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-3 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {posts.map((post, index) => (
                     <article
                       key={post.id}
                       ref={index === posts.length - 1 ? lastElementRef : null}
                       onClick={() => handlePostClick(post)}
-                      className="group bg-black/40 rounded-xl p-6 hover:bg-black/60 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-gray-600 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-1 flex flex-col h-full"
+                      className="group bg-black/40 rounded-xl p-3 sm:p-6 hover:bg-black/60 transition-all duration-300 cursor-pointer border border-gray-800 hover:border-gray-600 hover:shadow-2xl hover:shadow-blue-500/10 transform hover:-translate-y-1 flex flex-col h-full"
                     >
                       {/* 썸네일 이미지 */}
-                      <div className="mb-4 w-full h-48 rounded-lg overflow-hidden">
+                      <div className="mb-3 sm:mb-4 w-full h-32 sm:h-48 rounded-lg overflow-hidden">
                         {post.thumbnail ? (
                           <Image
                             src={post.thumbnail}
