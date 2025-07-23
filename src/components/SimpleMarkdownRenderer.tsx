@@ -19,7 +19,7 @@ function highlightCode(code: string, language: string): string {
 
   let highlightedCode = escapeHtml(code);
 
-  // TypeScript/JavaScript 구문 강조 (MDEditor 스타일)
+  // TypeScript/JavaScript 구문 강조 (단순화된 안전한 버전)
   if (
     language === "ts" ||
     language === "typescript" ||
@@ -28,47 +28,35 @@ function highlightCode(code: string, language: string): string {
   ) {
     // 키워드 강조 (보라색)
     highlightedCode = highlightedCode.replace(
-      /\b(const|let|var|function|class|interface|type|export|import|from|default|async|await|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|public|private|protected|static|readonly|abstract|enum|namespace|module|declare)\b/g,
+      /\b(const|let|var|function|class|interface|type|export|import|from|default|async|await|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|public|private|protected|static|readonly)\b/g,
       '<span class="text-purple-400 font-semibold">$1</span>'
     );
 
-    // 연산자 강조 (연한 회색)
+    // 문자열 강조 (초록색) - 더 안전한 패턴
     highlightedCode = highlightedCode.replace(
-      /(\+\+|--|===|!==|==|!=|<=|>=|<|>|\|\||&&|!|\+|-|\*|\/|%|=|\+=|-=|\*=|\/=|%=|\?|:)/g,
-      '<span class="text-gray-300">$1</span>'
+      /"([^"]*?)"/g,
+      '<span class="text-green-400">"$1"</span>'
     );
-
-    // 문자열 강조 (초록색)
     highlightedCode = highlightedCode.replace(
-      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'|`([^`\\]*(\\.[^`\\]*)*)`/g,
-      '<span class="text-green-400">$&</span>'
+      /'([^']*?)'/g,
+      "<span class=\"text-green-400\">'$1'</span>"
     );
 
     // 숫자 강조 (주황색)
     highlightedCode = highlightedCode.replace(
-      /\b(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\b/g,
-      '<span class="text-orange-400">$&</span>'
+      /\b(\d+(?:\.\d+)?)\b/g,
+      '<span class="text-orange-400">$1</span>'
     );
 
-    // 함수명 강조 (노란색)
+    // 연산자 강조 (연한 회색) - 기본적인 것만
     highlightedCode = highlightedCode.replace(
-      /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g,
-      '<span class="text-yellow-300">$1</span>'
-    );
-
-    // 객체 속성 강조 (청록색)
-    highlightedCode = highlightedCode.replace(
-      /\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g,
-      '.<span class="text-cyan-300">$1</span>'
+      /(\s)(=)(\s)/g,
+      '$1<span class="text-gray-300">$2</span>$3'
     );
 
     // 주석 강조 (회색 이탤릭)
     highlightedCode = highlightedCode.replace(
       /\/\/.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-    highlightedCode = highlightedCode.replace(
-      /\/\*[\s\S]*?\*\//g,
       '<span class="text-gray-500 italic">$&</span>'
     );
 
@@ -76,81 +64,45 @@ function highlightCode(code: string, language: string): string {
     if (language === "ts" || language === "typescript") {
       // 타입 강조 (파란색)
       highlightedCode = highlightedCode.replace(
-        /:\s*(string|number|boolean|object|any|void|null|undefined|Array|Promise|Date|RegExp|Error|Function|Symbol|BigInt)\b/g,
-        ': <span class="text-blue-400 font-medium">$1</span>'
-      );
-
-      // 제네릭 타입 강조 (파란색)
-      highlightedCode = highlightedCode.replace(
-        /&lt;([A-Z][a-zA-Z0-9_]*(?:\[\])?(?:\s*\|\s*[A-Z][a-zA-Z0-9_]*(?:\[\])?)*)&gt;/g,
-        '&lt;<span class="text-blue-400">$1</span>&gt;'
-      );
-
-      // 인터페이스/타입 이름 강조 (청록색)
-      highlightedCode = highlightedCode.replace(
-        /\b(interface|type)\s+([A-Z][a-zA-Z0-9_]*)/g,
-        '<span class="text-purple-400 font-semibold">$1</span> <span class="text-cyan-400 font-semibold">$2</span>'
+        /:\s*(string|number|boolean|object|any|void|null|undefined)\b/g,
+        ': <span class="text-blue-400">$1</span>'
       );
     }
   }
 
-  // JSON 구문 강조 (MDEditor 스타일)
+  // JSON 구문 강조 (단순화된 안전한 버전)
   else if (language === "json") {
-    // 키 강조 (청록색)
+    // 문자열 강조 (초록색)
     highlightedCode = highlightedCode.replace(
-      /"([^"\\]*(\\.[^"\\]*)*)"(\s*:)/g,
-      '<span class="text-cyan-400 font-medium">"$1"</span>$3'
-    );
-
-    // 문자열 값 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /:\s*"([^"\\]*(\\.[^"\\]*)*)"/g,
-      ': <span class="text-green-400">"$1"</span>'
+      /"([^"]*)"/g,
+      '<span class="text-green-400">"$1"</span>'
     );
 
     // 숫자 강조 (주황색)
     highlightedCode = highlightedCode.replace(
-      /:\s*(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g,
-      ': <span class="text-orange-400">$1</span>'
+      /\b(\d+(?:\.\d+)?)\b/g,
+      '<span class="text-orange-400">$1</span>'
     );
 
     // boolean/null 값 강조 (보라색)
     highlightedCode = highlightedCode.replace(
-      /:\s*(true|false|null)\b/g,
-      ': <span class="text-purple-400 font-semibold">$1</span>'
-    );
-
-    // 구조 문자 강조 (회색)
-    highlightedCode = highlightedCode.replace(
-      /([{}[\],])/g,
-      '<span class="text-gray-300">$1</span>'
+      /\b(true|false|null)\b/g,
+      '<span class="text-purple-400">$1</span>'
     );
   }
 
-  // CSS 구문 강조 (MDEditor 스타일)
+  // CSS 구문 강조 (단순화된 안전한 버전)
   else if (language === "css") {
-    // 선택자 강조 (노란색)
-    highlightedCode = highlightedCode.replace(
-      /^([.#]?[a-zA-Z0-9-_:()[\]]+(?:\s*,\s*[.#]?[a-zA-Z0-9-_:()[\]]+)*)\s*{/gm,
-      '<span class="text-yellow-400 font-medium">$1</span> <span class="text-gray-300">{</span>'
-    );
-
     // 속성명 강조 (청록색)
     highlightedCode = highlightedCode.replace(
-      /([a-zA-Z-]+)(\s*:)/g,
-      '<span class="text-cyan-400 font-medium">$1</span><span class="text-gray-300">$2</span>'
+      /([a-zA-Z-]+):/g,
+      '<span class="text-cyan-400">$1</span>:'
     );
 
-    // 값 강조 (초록색)
+    // 값 강조 (초록색) - 간단한 패턴만
     highlightedCode = highlightedCode.replace(
       /:\s*([^;}\n]+)/g,
       ': <span class="text-green-400">$1</span>'
-    );
-
-    // 단위 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /(\d+(?:\.\d+)?)(px|em|rem|%|vh|vw|pt|pc|in|cm|mm|ex|ch|vmin|vmax|deg|rad|turn|s|ms|Hz|kHz|dpi|dpcm|dppx)/g,
-      '<span class="text-orange-400">$1</span><span class="text-orange-300">$2</span>'
     );
 
     // 색상 값 강조 (분홍색)
@@ -158,147 +110,30 @@ function highlightCode(code: string, language: string): string {
       /#([0-9a-fA-F]{3,6})\b/g,
       '<span class="text-pink-400">#$1</span>'
     );
-
-    // 구조 문자 강조 (회색)
-    highlightedCode = highlightedCode.replace(
-      /([{}();])/g,
-      '<span class="text-gray-300">$1</span>'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /\/\*[\s\S]*?\*\//g,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
   }
 
-  // Python 구문 강조
-  else if (language === "python" || language === "py") {
-    // 키워드 강조 (보라색)
-    highlightedCode = highlightedCode.replace(
-      /\b(def|class|import|from|as|if|elif|else|for|while|try|except|finally|with|pass|break|continue|return|yield|lambda|and|or|not|in|is|None|True|False|self|super|global|nonlocal|async|await)\b/g,
-      '<span class="text-purple-400 font-semibold">$1</span>'
-    );
-
-    // 문자열 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'|"""[\s\S]*?"""|'''[\s\S]*?'''/g,
-      '<span class="text-green-400">$&</span>'
-    );
-
-    // 숫자 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /\b\d+(\.\d+)?\b/g,
-      '<span class="text-orange-400">$&</span>'
-    );
-
-    // 함수명 강조 (노란색)
-    highlightedCode = highlightedCode.replace(
-      /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
-      '<span class="text-yellow-300">$1</span>'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /#.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-  }
-
-  // HTML 구문 강조
-  else if (language === "html" || language === "xml") {
-    // 태그명 강조 (빨간색)
-    highlightedCode = highlightedCode.replace(
-      /&lt;(\/?[a-zA-Z][a-zA-Z0-9]*)/g,
-      '&lt;<span class="text-red-400 font-medium">$1</span>'
-    );
-
-    // 속성명 강조 (청록색)
-    highlightedCode = highlightedCode.replace(
-      /\s([a-zA-Z-]+)=/g,
-      ' <span class="text-cyan-400">$1</span>='
-    );
-
-    // 속성값 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /="([^"]*)"/g,
-      '=<span class="text-green-400">"$1"</span>'
-    );
-
-    // 구조 문자 강조 (회색)
-    highlightedCode = highlightedCode.replace(
-      /(&lt;|&gt;|\/&gt;)/g,
-      '<span class="text-gray-300">$1</span>'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /&lt;!--[\s\S]*?--&gt;/g,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-  }
-
-  // Java 구문 강조
-  else if (language === "java") {
-    // 키워드 강조 (보라색)
-    highlightedCode = highlightedCode.replace(
-      /\b(public|private|protected|static|final|abstract|class|interface|extends|implements|import|package|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|throws|new|this|super|void|int|long|double|float|boolean|char|byte|short|String)\b/g,
-      '<span class="text-purple-400 font-semibold">$1</span>'
-    );
-
-    // 문자열 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g,
-      '<span class="text-green-400">$&</span>'
-    );
-
-    // 숫자 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /\b\d+(\.\d+)?[fFdDlL]?\b/g,
-      '<span class="text-orange-400">$&</span>'
-    );
-
-    // 함수명 강조 (노란색)
-    highlightedCode = highlightedCode.replace(
-      /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
-      '<span class="text-yellow-300">$1</span>'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /\/\/.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-    highlightedCode = highlightedCode.replace(
-      /\/\*[\s\S]*?\*\//g,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-  }
-
-  // 기본 언어 처리 (향상된 색상)
+  // 기본 언어 처리 (단순화된 안전한 버전)
   else {
     // 문자열 강조 (초록색)
     highlightedCode = highlightedCode.replace(
-      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g,
-      '<span class="text-green-400">$&</span>'
+      /"([^"]*)"/g,
+      '<span class="text-green-400">"$1"</span>'
+    );
+    highlightedCode = highlightedCode.replace(
+      /'([^']*)'/g,
+      "<span class=\"text-green-400\">'$1'</span>"
     );
 
     // 숫자 강조 (주황색)
     highlightedCode = highlightedCode.replace(
-      /\b\d+(\.\d+)?\b/g,
-      '<span class="text-orange-400">$&</span>'
+      /\b(\d+(?:\.\d+)?)\b/g,
+      '<span class="text-orange-400">$1</span>'
     );
 
-    // 일반적인 키워드 강조 (보라색)
+    // 기본 키워드 강조 (보라색)
     highlightedCode = highlightedCode.replace(
-      /\b(function|class|if|else|for|while|return|import|export|var|let|const|true|false|null|undefined)\b/g,
-      '<span class="text-purple-400 font-semibold">$1</span>'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /\/\/.*$|#.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
+      /\b(function|class|if|else|for|while|return|const|let|var|true|false|null)\b/g,
+      '<span class="text-purple-400">$1</span>'
     );
   }
 

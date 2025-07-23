@@ -40,7 +40,6 @@ export default function SafeMarkdownRenderer({
 
     // 디바이스 정보 로깅
     const deviceInfo = getDeviceInfo();
-    console.log("Device info:", deviceInfo);
 
     // 모바일이나 iOS에서만 fallback 사용
     if (deviceInfo.isMobile || deviceInfo.isIOS) {
