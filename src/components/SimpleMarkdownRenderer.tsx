@@ -8,79 +8,87 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
-// 안전한 구문 강조 함수 (HTML 이스케이프 후 적용)
+// 안전한 구문 강조 함수 (완전히 새로운 안전한 방식)
 function applySafeHighlighting(escapedCode: string, language: string): string {
+  // 언어 정규화 (js -> javascript)
+  const normalizedLanguage = language.toLowerCase();
+  const isJavaScript =
+    normalizedLanguage === "js" ||
+    normalizedLanguage === "javascript" ||
+    normalizedLanguage === "ts" ||
+    normalizedLanguage === "typescript";
+
+  if (!isJavaScript) {
+    // JavaScript/TypeScript가 아닌 경우 기본 회색으로 표시
+    return `<span class="text-gray-300">${escapedCode}</span>`;
+  }
+
+  // JavaScript/TypeScript 구문 강조 (매우 안전한 방식)
   let result = escapedCode;
 
-  // TypeScript/JavaScript 구문 강조
-  if (
-    language === "ts" ||
-    language === "typescript" ||
-    language === "js" ||
-    language === "javascript"
-  ) {
-    // 1. 키워드 강조 (이미 이스케이프된 텍스트에 안전하게 적용)
-    const keywords = [
-      "const",
-      "let",
-      "var",
-      "function",
-      "class",
-      "export",
-      "default",
-      "async",
-      "await",
-      "return",
-      "if",
-      "else",
-      "for",
-      "while",
-    ];
-    keywords.forEach((keyword) => {
-      // 단어 경계를 사용하여 정확한 매칭
-      const regex = new RegExp(`\\b${keyword}\\b`, "g");
+  try {
+    // 1. 키워드 강조 - 각각 개별적으로 안전하게 처리
+    const keywords = {
+      const: "text-purple-400",
+      let: "text-purple-400",
+      var: "text-purple-400",
+      function: "text-purple-400",
+      class: "text-purple-400",
+      export: "text-purple-400",
+      default: "text-purple-400",
+      async: "text-purple-400",
+      await: "text-purple-400",
+      return: "text-purple-400",
+      if: "text-purple-400",
+      else: "text-purple-400",
+      for: "text-purple-400",
+      while: "text-purple-400",
+    };
+
+    // 키워드를 하나씩 안전하게 처리
+    Object.entries(keywords).forEach(([keyword, colorClass]) => {
+      const safeRegex = new RegExp(`\\b${keyword}\\b`, "g");
       result = result.replace(
-        regex,
-        `<span style="color: #a855f7; font-weight: 600;">${keyword}</span>`
+        safeRegex,
+        `<span class="${colorClass} font-semibold">${keyword}</span>`
       );
     });
 
-    // 2. 문자열 강조 (HTML 이스케이프된 따옴표 처리)
+    // 2. 문자열 강조 (이스케이프된 따옴표 처리)
     result = result.replace(
       /&quot;([^&]*?)&quot;/g,
-      '<span style="color: #4ade80;">&quot;$1&quot;</span>'
+      '<span class="text-green-400">&quot;$1&quot;</span>'
     );
     result = result.replace(
       /&#x27;([^&]*?)&#x27;/g,
-      '<span style="color: #4ade80;">&#x27;$1&#x27;</span>'
+      '<span class="text-green-400">&#x27;$1&#x27;</span>'
     );
 
     // 3. 숫자 강조
     result = result.replace(
       /\b(\d+(?:\.\d+)?)\b/g,
-      '<span style="color: #fb923c;">$1</span>'
+      '<span class="text-orange-400">$1</span>'
     );
 
-    // 4. 연산자 강조 (공백으로 둘러싸인 등호만)
+    // 4. 등호 연산자 강조
     result = result.replace(
       /(\s)(=)(\s)/g,
-      '$1<span style="color: #d4d4d8;">$2</span>$3'
+      '$1<span class="text-gray-300">$2</span>$3'
     );
 
     // 5. 주석 강조
     result = result.replace(
       /\/\/.*$/gm,
-      '<span style="color: #6b7280; font-style: italic;">$&</span>'
+      '<span class="text-gray-500 italic">$&</span>'
     );
-  }
 
-  // 기본 색상 적용 (다른 언어나 언어 지정 없음)
-  else {
-    // 기본 회색 색상
-    result = `<span style="color: #d1d5db;">${result}</span>`;
+    // 6. 나머지 텍스트는 기본 색상
+    return `<span class="text-gray-300">${result}</span>`;
+  } catch (error) {
+    console.error("Highlighting error:", error);
+    // 에러 발생 시 기본 색상으로 표시
+    return `<span class="text-gray-300">${escapedCode}</span>`;
   }
-
-  return result;
 }
 
 export default function SimpleMarkdownRenderer({
