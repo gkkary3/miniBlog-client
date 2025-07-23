@@ -474,13 +474,15 @@ const WritePageContent = () => {
                           </h3>
                           <p className="text-gray-300 mb-4">
                             마크다운 에디터를 불러오는 중 문제가 발생했습니다.
+                            <br />
+                            기본 텍스트 에디터로 전환합니다.
                           </p>
-                          <button
-                            onClick={() => window.location.reload()}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                          >
-                            페이지 새로고침
-                          </button>
+                          <textarea
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder="마크다운 문법을 사용하여 내용을 작성하세요..."
+                            className="w-full h-96 p-4 bg-black/20 border border-gray-600 rounded-lg text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
                         </div>
                       </div>
                     }
