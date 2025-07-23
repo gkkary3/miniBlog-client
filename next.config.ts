@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "velog.velcdn.com",
+      "img1.kakaocdn.net",
       // 이미 등록된 다른 도메인도 여기에 추가
     ],
     remotePatterns: [
