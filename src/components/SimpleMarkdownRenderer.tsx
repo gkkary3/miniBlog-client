@@ -8,71 +8,6 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
-// 안전한 코드 구문 강조 함수 (HTML 충돌 완전 방지)
-function highlightCode(code: string, language: string): string {
-  try {
-    // 원본 코드를 그대로 사용 (HTML 이스케이프 하지 않음)
-    let result = code;
-
-    // TypeScript/JavaScript만 지원 (가장 안전한 방식)
-    if (
-      language === "ts" ||
-      language === "typescript" ||
-      language === "js" ||
-      language === "javascript"
-    ) {
-      // 1. 키워드 강조 - 개별적으로 처리
-      const keywords = [
-        "const",
-        "let",
-        "var",
-        "function",
-        "class",
-        "if",
-        "else",
-        "for",
-        "while",
-        "return",
-      ];
-      keywords.forEach((keyword) => {
-        const regex = new RegExp(`\\b${keyword}\\b`, "g");
-        result = result.replace(
-          regex,
-          `<span class="text-purple-400 font-semibold">${keyword}</span>`
-        );
-      });
-
-      // 2. 문자열 강조 - 안전한 방식
-      result = result.replace(
-        /"([^"]*)"/g,
-        '<span class="text-green-400">"$1"</span>'
-      );
-      result = result.replace(
-        /'([^']*)'/g,
-        "<span class=\"text-green-400\">'$1'</span>"
-      );
-
-      // 3. 숫자 강조
-      result = result.replace(
-        /\b(\d+(?:\.\d+)?)\b/g,
-        '<span class="text-orange-400">$1</span>'
-      );
-
-      // 4. 등호 연산자만 강조 (가장 안전)
-      result = result.replace(
-        /(\s)(=)(\s)/g,
-        '$1<span class="text-gray-300">$2</span>$3'
-      );
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Code highlighting error:", error);
-    // 에러 발생 시 원본 코드 반환
-    return code;
-  }
-}
-
 export default function SimpleMarkdownRenderer({
   source,
   style,
@@ -169,19 +104,17 @@ export default function SimpleMarkdownRenderer({
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원 (안전한 구문 강조)
+      // 코드 블록 복원 (구문 강조 비활성화)
       codeBlocks.forEach((codeBlock, index) => {
         const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
-        const language = match?.[1] || "";
         const content = match?.[2]?.trim() || "";
 
-        // HTML 이스케이프 후 구문 강조 적용
+        // HTML 이스케이프만 적용
         const escapedContent = escapeHtml(content);
-        const highlightedContent = highlightCode(escapedContent, language);
 
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
-          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0 border border-gray-700"><code class="text-xs sm:text-sm font-mono leading-relaxed">${highlightedContent}</code></pre>`
+          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0 border border-gray-700"><code class="text-gray-300 text-xs sm:text-sm font-mono leading-relaxed">${escapedContent}</code></pre>`
         );
       });
 
