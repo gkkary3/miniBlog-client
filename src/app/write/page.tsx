@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "../../stores/authStore";
 import dynamic from "next/dynamic";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { isMobileDevice } from "@/utils/deviceDetection";
+import MobileMarkdownEditor from "@/components/MobileMarkdownEditor";
 import type { TextState, TextAreaTextApi } from "@uiw/react-md-editor";
 
 const MDEditor = dynamic(
@@ -39,6 +41,7 @@ const WritePageContent = () => {
   const [thumbnail, setThumbnail] = useState<string>("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); // 🆕 페이지 로딩 상태
+  const [isMobile, setIsMobile] = useState(false);
 
   // 🏪 Zustand store에서 필요한 것들 가져오기
   const {
@@ -50,11 +53,14 @@ const WritePageContent = () => {
   } = useAuthStore();
   const router = useRouter();
 
-  // 🔐 로그인 검증
+  // 🔐 로그인 검증 및 모바일 감지
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
     }
+
+    // 모바일 감지
+    setIsMobile(isMobileDevice());
   }, [isAuthenticated, router]);
 
   // 🆕 수정 모드일 때 기존 게시글 데이터 로드
@@ -287,8 +293,8 @@ const WritePageContent = () => {
 
       <div className="relative z-10 py-12">
         {/* 헤더 섹션 */}
-        <div className="text-center mb-12">
-          <div className="container mx-auto px-4 max-w-3xl">
+        <div className="text-center mb-6 sm:mb-12">
+          <div className="container mx-auto px-2 sm:px-4 max-w-3xl">
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               당신만의 특별한 이야기를 세상과 나누어보세요 🌟
             </p>
@@ -298,9 +304,9 @@ const WritePageContent = () => {
         {/* 게시글 작성/수정 폼 */}
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* 상단 섹션들 (카테고리, 제목, 썸네일) */}
-          <div className="container mx-auto px-4 max-w-3xl space-y-8">
+          <div className="container mx-auto px-2 sm:px-4 max-w-3xl space-y-4 sm:space-y-8">
             {/* 카테고리 입력 섹션 */}
-            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl">
               <div className="flex items-center space-x-3 mb-6">
                 <span className="text-2xl">🏷️</span>
                 <h3 className="text-xl font-semibold text-white">
@@ -355,7 +361,7 @@ const WritePageContent = () => {
             </div>
 
             {/* 제목 입력 */}
-            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl">
               <div className="flex items-center space-x-3 mb-6">
                 <span className="text-2xl">📄</span>
                 <h3 className="text-xl font-semibold text-white">제목</h3>
@@ -379,7 +385,7 @@ const WritePageContent = () => {
             </div>
 
             {/* 썸네일 업로드 */}
-            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl">
               <div className="flex items-center space-x-3 mb-6">
                 <span className="text-2xl">🖼️</span>
                 <h3 className="text-xl font-semibold text-white">
@@ -453,8 +459,8 @@ const WritePageContent = () => {
           </div>
 
           {/* 내용 입력 - 헤더와 동일한 width */}
-          <div className="container mx-auto px-4 max-w-[1400px]">
-            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50 shadow-2xl">
+          <div className="container mx-auto px-2 sm:px-4 max-w-[1400px]">
+            <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl">
               <div className="flex items-center space-x-3 mb-6">
                 <span className="text-2xl">📝</span>
                 <h3 className="text-xl font-semibold text-white">내용</h3>
@@ -462,173 +468,187 @@ const WritePageContent = () => {
 
               <div className="relative">
                 <div className="w-full">
-                  <ErrorBoundary
-                    fallback={
-                      <div className="w-full h-[600px] bg-red-900/20 border border-red-700/50 rounded-xl flex items-center justify-center">
-                        <div className="text-center p-8">
-                          <span className="text-red-400 text-4xl block mb-4">
-                            ⚠️
-                          </span>
-                          <h3 className="text-red-400 font-semibold mb-2">
-                            에디터 로딩 실패
-                          </h3>
-                          <p className="text-gray-300 mb-4">
-                            마크다운 에디터를 불러오는 중 문제가 발생했습니다.
-                            <br />
-                            기본 텍스트 에디터로 전환합니다.
-                          </p>
-                          <textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder="마크다운 문법을 사용하여 내용을 작성하세요..."
-                            className="w-full h-96 p-4 bg-black/20 border border-gray-600 rounded-lg text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
+                  {isMobile ? (
+                    // 모바일용 간단한 에디터
+                    <MobileMarkdownEditor
+                      value={content}
+                      onChange={setContent}
+                      onImageUpload={uploadImage}
+                      placeholder="마크다운 문법을 사용하여 내용을 작성하세요..."
+                    />
+                  ) : (
+                    // 데스크톱용 MDEditor
+                    <ErrorBoundary
+                      fallback={
+                        <div className="w-full h-[600px] bg-red-900/20 border border-red-700/50 rounded-xl flex items-center justify-center">
+                          <div className="text-center p-8">
+                            <span className="text-red-400 text-4xl block mb-4">
+                              ⚠️
+                            </span>
+                            <h3 className="text-red-400 font-semibold mb-2">
+                              에디터 로딩 실패
+                            </h3>
+                            <p className="text-gray-300 mb-4">
+                              마크다운 에디터를 불러오는 중 문제가 발생했습니다.
+                              <br />
+                              기본 텍스트 에디터로 전환합니다.
+                            </p>
+                            <MobileMarkdownEditor
+                              value={content}
+                              onChange={setContent}
+                              onImageUpload={uploadImage}
+                              placeholder="마크다운 문법을 사용하여 내용을 작성하세요..."
+                            />
+                          </div>
                         </div>
-                      </div>
-                    }
-                  >
-                    {typeof window !== "undefined" && (
-                      <MDEditor
-                        value={content}
-                        onChange={(val) => setContent(val || "")}
-                        preview="live"
-                        height={600}
-                        visibleDragbar={false}
-                        hideToolbar={false}
-                        previewOptions={{
-                          skipHtml: false,
-                        }}
-                        textareaProps={{
-                          placeholder:
-                            "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
-                          style: {
-                            fontSize: 16,
-                            lineHeight: "1.6",
-                            color: "#f3f4f6",
-                            backgroundColor: "rgba(0, 0, 0, 0.2)",
-                            border: "1px solid #4b5563",
+                      }
+                    >
+                      {typeof window !== "undefined" && (
+                        <MDEditor
+                          value={content}
+                          onChange={(val) => setContent(val || "")}
+                          preview="live"
+                          height={600}
+                          visibleDragbar={false}
+                          hideToolbar={false}
+                          previewOptions={{
+                            skipHtml: false,
+                          }}
+                          textareaProps={{
+                            placeholder:
+                              "당신의 이야기를 자유롭게 펼쳐보세요...\n\n• 마크다운 문법을 사용할 수 있습니다\n• **굵게**, *기울임*, `코드` 등을 사용해보세요\n• 🖼️ 버튼으로 이미지를 업로드할 수 있습니다",
+                            style: {
+                              fontSize: 16,
+                              lineHeight: "1.6",
+                              color: "#f3f4f6",
+                              backgroundColor: "rgba(0, 0, 0, 0.2)",
+                              border: "1px solid #4b5563",
+                              borderRadius: "12px",
+                            },
+                          }}
+                          data-color-mode="dark"
+                          style={{
+                            backgroundColor: "rgba(0, 0, 0, 0.3)",
                             borderRadius: "12px",
-                          },
-                        }}
-                        data-color-mode="dark"
-                        style={{
-                          backgroundColor: "rgba(0, 0, 0, 0.3)",
-                          borderRadius: "12px",
-                          border: "1px solid #4b5563",
-                        }}
-                        extraCommands={[
-                          {
-                            name: "image-upload",
-                            keyCommand: "image-upload",
-                            buttonProps: {
-                              "aria-label": "이미지 업로드",
-                              title: "이미지 업로드 (최대 5MB)",
-                              style: {
-                                backgroundColor: "rgba(34, 197, 94, 0.1)",
-                                border: "1px solid rgba(34, 197, 94, 0.3)",
-                                borderRadius: "6px",
-                                padding: "8px 12px",
-                                minWidth: "48px",
-                                minHeight: "40px",
+                            border: "1px solid #4b5563",
+                          }}
+                          extraCommands={[
+                            {
+                              name: "image-upload",
+                              keyCommand: "image-upload",
+                              buttonProps: {
+                                "aria-label": "이미지 업로드",
+                                title: "이미지 업로드 (최대 5MB)",
+                                style: {
+                                  backgroundColor: "rgba(34, 197, 94, 0.1)",
+                                  border: "1px solid rgba(34, 197, 94, 0.3)",
+                                  borderRadius: "6px",
+                                  padding: "8px 12px",
+                                  minWidth: "48px",
+                                  minHeight: "40px",
+                                },
+                              },
+                              icon: (
+                                <div
+                                  style={{
+                                    fontSize: "24px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    color: "#f3f4f6",
+                                    padding: "4px",
+                                  }}
+                                >
+                                  🖼️
+                                </div>
+                              ),
+                              execute: async (
+                                state: TextState,
+                                api: TextAreaTextApi
+                              ) => {
+                                if (typeof window === "undefined") return;
+
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.accept =
+                                  "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif";
+                                input.multiple = false;
+
+                                input.onchange = async (e) => {
+                                  const file = (e.target as HTMLInputElement)
+                                    .files?.[0];
+                                  if (file) {
+                                    try {
+                                      if (file.size > 5 * 1024 * 1024) {
+                                        alert(
+                                          "이미지 크기는 5MB 이하여야 합니다."
+                                        );
+                                        return;
+                                      }
+
+                                      const loadingText = `![업로드 중...](uploading-${Date.now()})`;
+                                      api.replaceSelection(loadingText);
+
+                                      const imageUrl = await uploadImage(file);
+
+                                      // 마크다운 형식으로 이미지 삽입
+                                      const imageMarkdown = `![${file.name}](${imageUrl})\n\n`;
+
+                                      setContent((prev) =>
+                                        prev.replace(loadingText, imageMarkdown)
+                                      );
+
+                                      console.log(
+                                        "이미지 업로드 성공:",
+                                        imageUrl
+                                      );
+                                      console.log(
+                                        "이미지 마크다운:",
+                                        imageMarkdown
+                                      );
+
+                                      // 이미지 URL 접근 가능한지 테스트
+                                      fetch(imageUrl, { method: "HEAD" })
+                                        .then((response) => {
+                                          console.log(
+                                            "이미지 URL 테스트 성공:",
+                                            response.status
+                                          );
+                                          console.log(
+                                            "Content-Type:",
+                                            response.headers.get("Content-Type")
+                                          );
+                                        })
+                                        .catch((error) => {
+                                          console.log(
+                                            "이미지 URL 테스트 실패:",
+                                            error
+                                          );
+                                        });
+                                    } catch (error) {
+                                      console.error(
+                                        "이미지 업로드 실패:",
+                                        error
+                                      );
+                                      setContent((prev) => {
+                                        const loadingPattern =
+                                          /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
+                                        return prev.replace(loadingPattern, "");
+                                      });
+                                      alert(
+                                        "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
+                                      );
+                                    }
+                                  }
+                                };
+
+                                input.click();
                               },
                             },
-                            icon: (
-                              <div
-                                style={{
-                                  fontSize: "24px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  color: "#f3f4f6",
-                                  padding: "4px",
-                                }}
-                              >
-                                🖼️
-                              </div>
-                            ),
-                            execute: async (
-                              state: TextState,
-                              api: TextAreaTextApi
-                            ) => {
-                              if (typeof window === "undefined") return;
-
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.accept =
-                                "image/jpeg,image/jpg,image/png,image/gif,image/webp,image/avif";
-                              input.multiple = false;
-
-                              input.onchange = async (e) => {
-                                const file = (e.target as HTMLInputElement)
-                                  .files?.[0];
-                                if (file) {
-                                  try {
-                                    if (file.size > 5 * 1024 * 1024) {
-                                      alert(
-                                        "이미지 크기는 5MB 이하여야 합니다."
-                                      );
-                                      return;
-                                    }
-
-                                    const loadingText = `![업로드 중...](uploading-${Date.now()})`;
-                                    api.replaceSelection(loadingText);
-
-                                    const imageUrl = await uploadImage(file);
-
-                                    // 마크다운 형식으로 이미지 삽입
-                                    const imageMarkdown = `![${file.name}](${imageUrl})\n\n`;
-
-                                    setContent((prev) =>
-                                      prev.replace(loadingText, imageMarkdown)
-                                    );
-
-                                    console.log(
-                                      "이미지 업로드 성공:",
-                                      imageUrl
-                                    );
-                                    console.log(
-                                      "이미지 마크다운:",
-                                      imageMarkdown
-                                    );
-
-                                    // 이미지 URL 접근 가능한지 테스트
-                                    fetch(imageUrl, { method: "HEAD" })
-                                      .then((response) => {
-                                        console.log(
-                                          "이미지 URL 테스트 성공:",
-                                          response.status
-                                        );
-                                        console.log(
-                                          "Content-Type:",
-                                          response.headers.get("Content-Type")
-                                        );
-                                      })
-                                      .catch((error) => {
-                                        console.log(
-                                          "이미지 URL 테스트 실패:",
-                                          error
-                                        );
-                                      });
-                                  } catch (error) {
-                                    console.error("이미지 업로드 실패:", error);
-                                    setContent((prev) => {
-                                      const loadingPattern =
-                                        /!\[업로드 중\.\.\.\]\(uploading-\d+\)/g;
-                                      return prev.replace(loadingPattern, "");
-                                    });
-                                    alert(
-                                      "이미지 업로드에 실패했습니다. 네트워크 상태를 확인해주세요."
-                                    );
-                                  }
-                                }
-                              };
-
-                              input.click();
-                            },
-                          },
-                        ]}
-                      />
-                    )}
-                  </ErrorBoundary>
+                          ]}
+                        />
+                      )}
+                    </ErrorBoundary>
+                  )}
                 </div>
 
                 <div className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-lg">
@@ -643,7 +663,7 @@ const WritePageContent = () => {
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="container mx-auto px-4 max-w-3xl">
+            <div className="container mx-auto px-2 sm:px-4 max-w-3xl">
               <div className="bg-red-900/20 border border-red-700/50 rounded-xl p-6">
                 <div className="flex items-center">
                   <span className="text-red-400 mr-3 text-xl">⚠️</span>
@@ -654,7 +674,7 @@ const WritePageContent = () => {
           )}
 
           {/* 액션 버튼들 */}
-          <div className="container mx-auto px-4 max-w-3xl">
+          <div className="container mx-auto px-2 sm:px-4 max-w-3xl">
             <div className="flex justify-center space-x-6 pt-8">
               <button
                 type="button"

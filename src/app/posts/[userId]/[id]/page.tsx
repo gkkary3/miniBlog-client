@@ -8,7 +8,7 @@ import { Post } from "../../../../types/post";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import CommentSection from "@/components/Comments";
-import SimpleMarkdownRenderer from "@/components/SimpleMarkdownRenderer";
+import SafeMarkdownRenderer from "@/components/SafeMarkdownRenderer";
 import { PostDetailSkeleton } from "@/components/Skeleton";
 import SEO from "@/components/SEO";
 
@@ -326,7 +326,7 @@ export default function PostDetailPage({
             )}
             {/* // 🆕 마크다운 렌더링 */}
             <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-3 sm:p-8 border border-gray-700/50 shadow-2xl mb-4 sm:mb-8">
-              <SimpleMarkdownRenderer
+              <SafeMarkdownRenderer
                 source={post.content}
                 style={{
                   backgroundColor: "transparent",

@@ -3,10 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import ErrorBoundary from "./ErrorBoundary";
-import {
-  shouldUseFallbackRenderer,
-  getDeviceInfo,
-} from "@/utils/deviceDetection";
+import { getDeviceInfo } from "@/utils/deviceDetection";
 
 const MDEditorMarkdown = dynamic(
   () => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown),
@@ -44,29 +41,16 @@ export default function SafeMarkdownRenderer({
     const deviceInfo = getDeviceInfo();
     console.log("Device info:", deviceInfo);
 
-    // 디바이스 감지 결과에 따라 fallback 사용 결정
-    if (shouldUseFallbackRenderer()) {
-      console.log("Using fallback renderer based on device detection");
+    // 모바일이나 iOS에서만 fallback 사용
+    if (deviceInfo.isMobile || deviceInfo.isIOS) {
+      console.log("Using fallback renderer for mobile/iOS device");
       setShouldUseFallback(true);
       return;
     }
 
-    // 데스크톱에서도 MDEditor 로딩 테스트
-    const timer = setTimeout(() => {
-      try {
-        // MDEditor 관련 요소가 있는지 확인
-        const mdElements = document.querySelectorAll("[data-color-mode]");
-        if (mdElements.length === 0) {
-          console.warn("MDEditor elements not found, using fallback");
-          setShouldUseFallback(true);
-        }
-      } catch (error) {
-        console.warn("MDEditor test failed:", error);
-        setShouldUseFallback(true);
-      }
-    }, 2000); // 2초 후 테스트
-
-    return () => clearTimeout(timer);
+    // 데스크톱에서는 MDEditor 사용 시도
+    console.log("Using MDEditor for desktop");
+    setShouldUseFallback(false);
   }, []);
 
   // 서버사이드에서는 fallback 렌더링
@@ -145,14 +129,14 @@ export default function SafeMarkdownRenderer({
       '<div class="my-4"><img src="$2" alt="$1" class="max-w-full h-auto rounded-lg shadow-lg" loading="lazy" /></div>'
     );
 
-    // 리스트 처리
+    // 리스트 처리 (점 중복 방지)
     html = html.replace(
       /^[\s]*[-*+]\s+(.*)$/gm,
-      '<li class="ml-4 mb-1 text-gray-300">• $1</li>'
+      '<div class="flex items-start mb-2 ml-4"><span class="text-gray-400 mr-2 mt-1">•</span><span class="text-gray-300">$1</span></div>'
     );
     html = html.replace(
-      /^[\s]*\d+\.\s+(.*)$/gm,
-      '<li class="ml-4 mb-1 text-gray-300 list-decimal">$1</li>'
+      /^[\s]*(\d+)\.\s+(.*)$/gm,
+      '<div class="flex items-start mb-2 ml-4"><span class="text-gray-400 mr-2 mt-1">$1.</span><span class="text-gray-300">$2</span></div>'
     );
 
     // 인용 블록 처리
@@ -186,12 +170,6 @@ export default function SafeMarkdownRenderer({
           __html: parseSimpleMarkdown(source),
         }}
       />
-      <div className="mt-6 p-3 bg-blue-900/20 border border-blue-700/50 rounded-lg">
-        <p className="text-blue-400 text-sm flex items-center">
-          <span className="mr-2">📱</span>
-          모바일 최적화 렌더링을 사용중입니다.
-        </p>
-      </div>
     </div>
   );
 
@@ -201,22 +179,7 @@ export default function SafeMarkdownRenderer({
   }
 
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-xl p-6 my-4">
-          <div className="flex items-center mb-4">
-            <span className="text-yellow-400 mr-3 text-xl">⚠️</span>
-            <h3 className="text-yellow-400 font-semibold">
-              마크다운 렌더링 오류
-            </h3>
-          </div>
-          <p className="text-gray-300 mb-4">
-            고급 마크다운 렌더링에 실패했습니다. 기본 렌더링으로 전환합니다.
-          </p>
-          <FallbackRenderer />
-        </div>
-      }
-    >
+    <ErrorBoundary fallback={<FallbackRenderer />}>
       <div className={className}>
         <MDEditorMarkdown
           source={source}

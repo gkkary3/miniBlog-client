@@ -8,6 +8,117 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
+// 간단한 코드 구문 강조 함수
+function highlightCode(code: string, language: string): string {
+  // HTML 이스케이프
+  const escapeHtml = (text: string) => {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
+  let highlightedCode = escapeHtml(code);
+
+  // TypeScript/JavaScript 구문 강조
+  if (
+    language === "ts" ||
+    language === "typescript" ||
+    language === "js" ||
+    language === "javascript"
+  ) {
+    // 키워드 강조
+    highlightedCode = highlightedCode.replace(
+      /\b(const|let|var|function|class|interface|type|export|import|from|default|async|await|return|if|else|for|while|try|catch|finally|throw|new|this|super|extends|implements|public|private|protected|static|readonly)\b/g,
+      '<span class="text-purple-400 font-semibold">$1</span>'
+    );
+
+    // 문자열 강조
+    highlightedCode = highlightedCode.replace(
+      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g,
+      '<span class="text-green-400">$&</span>'
+    );
+
+    // 숫자 강조
+    highlightedCode = highlightedCode.replace(
+      /\b\d+(\.\d+)?\b/g,
+      '<span class="text-orange-400">$&</span>'
+    );
+
+    // 주석 강조
+    highlightedCode = highlightedCode.replace(
+      /\/\/.*$/gm,
+      '<span class="text-gray-500 italic">$&</span>'
+    );
+
+    // 타입 강조 (TypeScript)
+    if (language === "ts" || language === "typescript") {
+      highlightedCode = highlightedCode.replace(
+        /:\s*(string|number|boolean|object|any|void|null|undefined|Array|Promise)\b/g,
+        ': <span class="text-blue-400">$1</span>'
+      );
+    }
+  }
+
+  // JSON 구문 강조
+  else if (language === "json") {
+    // 문자열 키와 값 강조
+    highlightedCode = highlightedCode.replace(
+      /"([^"\\]*(\\.[^"\\]*)*)"/g,
+      '<span class="text-green-400">$&</span>'
+    );
+
+    // 숫자 강조
+    highlightedCode = highlightedCode.replace(
+      /:\s*(\d+(\.\d+)?)\b/g,
+      ': <span class="text-orange-400">$1</span>'
+    );
+
+    // boolean 값 강조
+    highlightedCode = highlightedCode.replace(
+      /:\s*(true|false|null)\b/g,
+      ': <span class="text-purple-400">$1</span>'
+    );
+  }
+
+  // CSS 구문 강조
+  else if (language === "css") {
+    // 속성명 강조
+    highlightedCode = highlightedCode.replace(
+      /([a-zA-Z-]+):/g,
+      '<span class="text-blue-400">$1</span>:'
+    );
+
+    // 값 강조
+    highlightedCode = highlightedCode.replace(
+      /:\s*([^;}\n]+)/g,
+      ': <span class="text-green-400">$1</span>'
+    );
+
+    // 선택자 강조
+    highlightedCode = highlightedCode.replace(
+      /^([.#]?[a-zA-Z0-9-_]+)\s*{/gm,
+      '<span class="text-yellow-400">$1</span> {'
+    );
+  }
+
+  // 기본 색상 (다른 언어들)
+  else {
+    // 문자열 강조
+    highlightedCode = highlightedCode.replace(
+      /"([^"\\]*(\\.[^"\\]*)*)"|'([^'\\]*(\\.[^'\\]*)*)'/g,
+      '<span class="text-green-400">$&</span>'
+    );
+
+    // 숫자 강조
+    highlightedCode = highlightedCode.replace(
+      /\b\d+(\.\d+)?\b/g,
+      '<span class="text-orange-400">$&</span>'
+    );
+  }
+
+  return highlightedCode;
+}
+
 export default function SimpleMarkdownRenderer({
   source,
   style,
@@ -73,10 +184,10 @@ export default function SimpleMarkdownRenderer({
         '<em class="italic text-gray-300">$1</em>'
       );
 
-      // 링크 처리
+      // 링크 처리 (스타일 개선)
       html = html.replace(
         /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" class="text-blue-400 hover:text-blue-300 underline transition-colors" target="_blank" rel="noopener noreferrer">$1</a>'
+        '<a href="$2" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors font-medium" target="_blank" rel="noopener noreferrer">$1</a>'
       );
 
       // 이미지 처리 (모바일 최적화)
@@ -85,44 +196,47 @@ export default function SimpleMarkdownRenderer({
         '<div class="my-3 sm:my-4 -mx-3 sm:mx-0"><img src="$2" alt="$1" class="w-full h-auto rounded-lg shadow-lg" loading="lazy" style="max-width: 100%; height: auto;" /></div>'
       );
 
-      // 리스트 처리
+      // 리스트 처리 (중복 방지)
       html = html.replace(
         /^[\s]*[-*+]\s+(.*)$/gm,
-        '<div class="flex items-start mb-2"><span class="text-blue-400 mr-2 mt-1">•</span><span class="text-gray-300">$1</span></div>'
+        '<li class="flex items-start mb-2 ml-4"><span class="text-gray-400 mr-2 mt-1">•</span><span class="text-gray-300">$1</span></li>'
       );
       html = html.replace(
-        /^[\s]*\d+\.\s+(.*)$/gm,
-        '<div class="flex items-start mb-2"><span class="text-blue-400 mr-2 mt-1">•</span><span class="text-gray-300">$1</span></div>'
+        /^[\s]*(\d+)\.\s+(.*)$/gm,
+        '<li class="flex items-start mb-2 ml-4"><span class="text-gray-400 mr-2 mt-1">$1.</span><span class="text-gray-300">$2</span></li>'
       );
 
-      // 인용 블록 처리
+      // 인용 블록 처리 (스타일 개선)
       html = html.replace(
         /^&gt;\s*(.*)$/gm,
-        '<div class="border-l-4 border-blue-500 pl-4 my-4 text-gray-300 italic bg-gray-800/30 py-2">$1</div>'
+        '<div class="border-l-4 border-gray-500 pl-4 my-4 text-gray-400 italic bg-gray-800/20 py-2 rounded-r-lg">$1</div>'
       );
 
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원 (모바일 최적화)
+      // 코드 블록 복원 (구문 강조 지원)
       codeBlocks.forEach((codeBlock, index) => {
-        const content = codeBlock
-          .replace(/```(\w+)?\n?([\s\S]*?)```/g, "$2")
-          .trim();
-        const escapedContent = escapeHtml(content);
+        const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
+        const language = match?.[1] || "";
+        const content = match?.[2]?.trim() || "";
+
+        // 간단한 구문 강조 적용
+        const highlightedContent = highlightCode(content, language);
+
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
-          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0"><code class="text-green-400 text-xs sm:text-sm font-mono">${escapedContent}</code></pre>`
+          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto -mx-3 sm:mx-0 border border-gray-700"><code class="text-xs sm:text-sm font-mono leading-relaxed">${highlightedContent}</code></pre>`
         );
       });
 
-      // 인라인 코드 복원 (모바일 최적화)
+      // 인라인 코드 복원 (스타일 개선)
       inlineCodes.forEach((inlineCode, index) => {
         const content = inlineCode.replace(/`([^`]+)`/g, "$1");
         const escapedContent = escapeHtml(content);
         html = html.replace(
           `__INLINE_CODE_${index}__`,
-          `<code class="bg-gray-800 px-1 sm:px-2 py-1 rounded text-green-400 text-xs sm:text-sm font-mono">${escapedContent}</code>`
+          `<code class="bg-gray-800 px-1 sm:px-2 py-1 rounded text-cyan-300 text-xs sm:text-sm font-mono border border-gray-600">${escapedContent}</code>`
         );
       });
 
@@ -156,12 +270,6 @@ export default function SimpleMarkdownRenderer({
         className="prose prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: parsedContent }}
       />
-      <div className="mt-6 p-3 bg-green-900/20 border border-green-700/50 rounded-lg">
-        <p className="text-green-400 text-sm flex items-center">
-          <span className="mr-2">✅</span>
-          안전한 마크다운 렌더링이 적용되었습니다.
-        </p>
-      </div>
     </div>
   );
 }

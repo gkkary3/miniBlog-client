@@ -3,7 +3,7 @@
 export const isMobileDevice = (): boolean => {
   if (typeof window === "undefined") return false;
 
-  // User Agent 기반 감지
+  // User Agent 기반 감지 (가장 정확한 방법)
   const userAgent = navigator.userAgent.toLowerCase();
   const mobileKeywords = [
     "android",
@@ -14,21 +14,35 @@ export const isMobileDevice = (): boolean => {
     "blackberry",
     "iemobile",
     "opera mini",
-    "mobile",
   ];
 
   const isMobileUA = mobileKeywords.some((keyword) =>
     userAgent.includes(keyword)
   );
 
-  // 화면 크기 기반 감지
-  const isMobileScreen = window.innerWidth <= 768;
+  // 모바일 브라우저 패턴 감지
+  const mobilePattern = /mobile|android|iphone|ipad|phone/i;
+  const isMobilePattern = mobilePattern.test(userAgent);
 
-  // 터치 지원 감지
-  const isTouchDevice =
-    "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  // User Agent가 명확히 모바일을 가리키면 true
+  if (isMobileUA || isMobilePattern) {
+    return true;
+  }
 
-  return isMobileUA || (isMobileScreen && isTouchDevice);
+  // 데스크톱 브라우저 패턴 감지 (제외할 패턴들)
+  const desktopPatterns = [/windows nt/i, /macintosh/i, /linux/i, /x11/i];
+
+  const isDesktop = desktopPatterns.some((pattern) => pattern.test(userAgent));
+
+  // 명확히 데스크톱이면 false
+  if (isDesktop && !isMobileUA && !isMobilePattern) {
+    return false;
+  }
+
+  // 화면 크기 기반 감지 (보조적으로만 사용)
+  const isMobileScreen = window.innerWidth <= 480; // 더 작은 크기로 제한
+
+  return isMobileScreen;
 };
 
 export const isIOSDevice = (): boolean => {
