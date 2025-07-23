@@ -49,6 +49,10 @@ function applyHighlightingFirst(code: string, language: string): string {
       "else",
       "for",
       "while",
+      "import",
+      "from",
+      "interface",
+      "type",
     ];
 
     keywords.forEach((keyword) => {
@@ -59,32 +63,58 @@ function applyHighlightingFirst(code: string, language: string): string {
       );
     });
 
-    // 2. 문자열 강조 (이스케이프 이전에 처리)
+    // 2. HTML 태그 강조 (JSX/TSX 지원)
+    result = result.replace(
+      /<(\/?[a-zA-Z][a-zA-Z0-9]*)/g,
+      "__TAG_START__<$1__TAG_END__"
+    );
+    result = result.replace(/>/g, "__TAG_BRACKET_START__>__TAG_BRACKET_END__");
+
+    // 3. 문자열 강조 (이스케이프 이전에 처리)
     result = result.replace(/"([^"]*)"/g, '__STRING_START__"$1"__STRING_END__');
     result = result.replace(/'([^']*)'/g, "__STRING_START__'$1'__STRING_END__");
+    result = result.replace(/`([^`]*)`/g, "__STRING_START__`$1`__STRING_END__");
 
-    // 3. 숫자 강조
+    // 4. 숫자 강조
     result = result.replace(
       /\b(\d+(?:\.\d+)?)\b/g,
       "__NUMBER_START__$1__NUMBER_END__"
     );
 
-    // 4. 등호 연산자 강조
+    // 5. 연산자 강조 (더 많은 연산자 지원)
     result = result.replace(
-      /(\s)(=)(\s)/g,
+      /(\s)(=|===|!==|==|!=|<=|>=|\+|-|\*|\/|%|\?|:)(\s)/g,
       "$1__OPERATOR_START__$2__OPERATOR_END__$3"
     );
 
-    // 5. 주석 강조
+    // 6. 중괄호, 대괄호, 소괄호 강조
+    result = result.replace(
+      /([{}[\]()])/g,
+      "__BRACKET_START__$1__BRACKET_END__"
+    );
+
+    // 7. 주석 강조
     result = result.replace(/\/\/.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+    result = result.replace(
+      /\/\*[\s\S]*?\*\//g,
+      "__COMMENT_START__$&__COMMENT_END__"
+    );
 
     // 6. HTML 이스케이프 적용
     result = escapeHtml(result);
 
-    // 7. 플레이스홀더를 실제 HTML 태그로 변환
+    // 8. 플레이스홀더를 실제 HTML 태그로 변환
     result = result.replace(
       /__KEYWORD_START__(.*?)__KEYWORD_END__/g,
       '<span class="text-purple-400 font-semibold">$1</span>'
+    );
+    result = result.replace(
+      /__TAG_START__(.*?)__TAG_END__/g,
+      '<span class="text-red-400 font-medium">$1</span>'
+    );
+    result = result.replace(
+      /__TAG_BRACKET_START__(.*?)__TAG_BRACKET_END__/g,
+      '<span class="text-red-400">$1</span>'
     );
     result = result.replace(
       /__STRING_START__(.*?)__STRING_END__/g,
@@ -96,7 +126,11 @@ function applyHighlightingFirst(code: string, language: string): string {
     );
     result = result.replace(
       /__OPERATOR_START__(.*?)__OPERATOR_END__/g,
-      '<span class="text-gray-300">$1</span>'
+      '<span class="text-cyan-400">$1</span>'
+    );
+    result = result.replace(
+      /__BRACKET_START__(.*?)__BRACKET_END__/g,
+      '<span class="text-yellow-400">$1</span>'
     );
     result = result.replace(
       /__COMMENT_START__(.*?)__COMMENT_END__/g,
@@ -208,8 +242,9 @@ export default function SimpleMarkdownRenderer({
 
       // 코드 블록 복원 (구문 강조 우선 적용)
       codeBlocks.forEach((codeBlock, index) => {
-        const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
-        const language = match?.[1] || "";
+        // 공백이 있는 경우도 처리: ``` js 또는 ```js
+        const match = codeBlock.match(/```\s*(\w+)?\s*\n?([\s\S]*?)```/);
+        const language = match?.[1]?.trim() || "";
         const content = match?.[2]?.trim() || "";
 
         // 구문 강조를 먼저 적용한 후 HTML 이스케이프
