@@ -8,136 +8,69 @@ interface SimpleMarkdownRendererProps {
   className?: string;
 }
 
-// 간단한 코드 구문 강조 함수
+// 안전한 코드 구문 강조 함수 (HTML 충돌 완전 방지)
 function highlightCode(code: string, language: string): string {
-  // HTML 이스케이프
-  const escapeHtml = (text: string) => {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  };
+  try {
+    // 원본 코드를 그대로 사용 (HTML 이스케이프 하지 않음)
+    let result = code;
 
-  let highlightedCode = escapeHtml(code);
+    // TypeScript/JavaScript만 지원 (가장 안전한 방식)
+    if (
+      language === "ts" ||
+      language === "typescript" ||
+      language === "js" ||
+      language === "javascript"
+    ) {
+      // 1. 키워드 강조 - 개별적으로 처리
+      const keywords = [
+        "const",
+        "let",
+        "var",
+        "function",
+        "class",
+        "if",
+        "else",
+        "for",
+        "while",
+        "return",
+      ];
+      keywords.forEach((keyword) => {
+        const regex = new RegExp(`\\b${keyword}\\b`, "g");
+        result = result.replace(
+          regex,
+          `<span class="text-purple-400 font-semibold">${keyword}</span>`
+        );
+      });
 
-  // TypeScript/JavaScript 구문 강조 (단순화된 안전한 버전)
-  if (
-    language === "ts" ||
-    language === "typescript" ||
-    language === "js" ||
-    language === "javascript"
-  ) {
-    // 키워드 강조 (보라색)
-    highlightedCode = highlightedCode.replace(
-      /\b(const|let|var|function|class|interface|type|export|import|from|default|async|await|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|public|private|protected|static|readonly)\b/g,
-      '<span class="text-purple-400 font-semibold">$1</span>'
-    );
+      // 2. 문자열 강조 - 안전한 방식
+      result = result.replace(
+        /"([^"]*)"/g,
+        '<span class="text-green-400">"$1"</span>'
+      );
+      result = result.replace(
+        /'([^']*)'/g,
+        "<span class=\"text-green-400\">'$1'</span>"
+      );
 
-    // 문자열 강조 (초록색) - 더 안전한 패턴
-    highlightedCode = highlightedCode.replace(
-      /"([^"]*?)"/g,
-      '<span class="text-green-400">"$1"</span>'
-    );
-    highlightedCode = highlightedCode.replace(
-      /'([^']*?)'/g,
-      "<span class=\"text-green-400\">'$1'</span>"
-    );
+      // 3. 숫자 강조
+      result = result.replace(
+        /\b(\d+(?:\.\d+)?)\b/g,
+        '<span class="text-orange-400">$1</span>'
+      );
 
-    // 숫자 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /\b(\d+(?:\.\d+)?)\b/g,
-      '<span class="text-orange-400">$1</span>'
-    );
-
-    // 연산자 강조 (연한 회색) - 기본적인 것만
-    highlightedCode = highlightedCode.replace(
-      /(\s)(=)(\s)/g,
-      '$1<span class="text-gray-300">$2</span>$3'
-    );
-
-    // 주석 강조 (회색 이탤릭)
-    highlightedCode = highlightedCode.replace(
-      /\/\/.*$/gm,
-      '<span class="text-gray-500 italic">$&</span>'
-    );
-
-    // TypeScript 전용 구문 강조
-    if (language === "ts" || language === "typescript") {
-      // 타입 강조 (파란색)
-      highlightedCode = highlightedCode.replace(
-        /:\s*(string|number|boolean|object|any|void|null|undefined)\b/g,
-        ': <span class="text-blue-400">$1</span>'
+      // 4. 등호 연산자만 강조 (가장 안전)
+      result = result.replace(
+        /(\s)(=)(\s)/g,
+        '$1<span class="text-gray-300">$2</span>$3'
       );
     }
+
+    return result;
+  } catch (error) {
+    console.error("Code highlighting error:", error);
+    // 에러 발생 시 원본 코드 반환
+    return code;
   }
-
-  // JSON 구문 강조 (단순화된 안전한 버전)
-  else if (language === "json") {
-    // 문자열 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /"([^"]*)"/g,
-      '<span class="text-green-400">"$1"</span>'
-    );
-
-    // 숫자 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /\b(\d+(?:\.\d+)?)\b/g,
-      '<span class="text-orange-400">$1</span>'
-    );
-
-    // boolean/null 값 강조 (보라색)
-    highlightedCode = highlightedCode.replace(
-      /\b(true|false|null)\b/g,
-      '<span class="text-purple-400">$1</span>'
-    );
-  }
-
-  // CSS 구문 강조 (단순화된 안전한 버전)
-  else if (language === "css") {
-    // 속성명 강조 (청록색)
-    highlightedCode = highlightedCode.replace(
-      /([a-zA-Z-]+):/g,
-      '<span class="text-cyan-400">$1</span>:'
-    );
-
-    // 값 강조 (초록색) - 간단한 패턴만
-    highlightedCode = highlightedCode.replace(
-      /:\s*([^;}\n]+)/g,
-      ': <span class="text-green-400">$1</span>'
-    );
-
-    // 색상 값 강조 (분홍색)
-    highlightedCode = highlightedCode.replace(
-      /#([0-9a-fA-F]{3,6})\b/g,
-      '<span class="text-pink-400">#$1</span>'
-    );
-  }
-
-  // 기본 언어 처리 (단순화된 안전한 버전)
-  else {
-    // 문자열 강조 (초록색)
-    highlightedCode = highlightedCode.replace(
-      /"([^"]*)"/g,
-      '<span class="text-green-400">"$1"</span>'
-    );
-    highlightedCode = highlightedCode.replace(
-      /'([^']*)'/g,
-      "<span class=\"text-green-400\">'$1'</span>"
-    );
-
-    // 숫자 강조 (주황색)
-    highlightedCode = highlightedCode.replace(
-      /\b(\d+(?:\.\d+)?)\b/g,
-      '<span class="text-orange-400">$1</span>'
-    );
-
-    // 기본 키워드 강조 (보라색)
-    highlightedCode = highlightedCode.replace(
-      /\b(function|class|if|else|for|while|return|const|let|var|true|false|null)\b/g,
-      '<span class="text-purple-400">$1</span>'
-    );
-  }
-
-  return highlightedCode;
 }
 
 export default function SimpleMarkdownRenderer({
@@ -236,14 +169,15 @@ export default function SimpleMarkdownRenderer({
       // 수평선 처리
       html = html.replace(/^---$/gm, '<hr class="border-gray-600 my-6" />');
 
-      // 코드 블록 복원 (구문 강조 지원)
+      // 코드 블록 복원 (안전한 구문 강조)
       codeBlocks.forEach((codeBlock, index) => {
         const match = codeBlock.match(/```(\w+)?\n?([\s\S]*?)```/);
         const language = match?.[1] || "";
         const content = match?.[2]?.trim() || "";
 
-        // 간단한 구문 강조 적용
-        const highlightedContent = highlightCode(content, language);
+        // HTML 이스케이프 후 구문 강조 적용
+        const escapedContent = escapeHtml(content);
+        const highlightedContent = highlightCode(escapedContent, language);
 
         html = html.replace(
           `__CODE_BLOCK_${index}__`,
