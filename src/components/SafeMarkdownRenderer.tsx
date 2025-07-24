@@ -40,10 +40,14 @@ export default function SafeMarkdownRenderer({
 
     // 디바이스 정보 로깅
     const deviceInfo = getDeviceInfo();
+    console.log("Device info:", deviceInfo);
+    console.log("Source contains images:", /!\[.*?\]\(.*?\)/.test(source));
 
     // 모바일이나 iOS에서만 fallback 사용
     if (deviceInfo.isMobile || deviceInfo.isIOS) {
-      console.log("Using fallback renderer for mobile/iOS device");
+      console.log(
+        "Using fallback renderer (SimpleMarkdownRenderer) for mobile/iOS device"
+      );
       setShouldUseFallback(true);
       return;
     }
@@ -51,7 +55,7 @@ export default function SafeMarkdownRenderer({
     // 데스크톱에서는 MDEditor 사용 시도
     console.log("Using MDEditor for desktop");
     setShouldUseFallback(false);
-  }, []);
+  }, [source]);
 
   // 서버사이드에서는 fallback 렌더링
   if (!isClient) {

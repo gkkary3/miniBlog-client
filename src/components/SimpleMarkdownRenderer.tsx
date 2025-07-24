@@ -895,6 +895,28 @@ export default function SimpleMarkdownRenderer({
         return `__INLINE_CODE_${index}__`;
       });
 
+      // 4칸 들여쓰기 코드 블록 처리 (마크다운 표준)
+      const indentedCodeBlocks: string[] = [];
+      html = html.replace(/^(    |\t)(.*)$/gm, (match, indent, content) => {
+        const index = indentedCodeBlocks.length;
+        indentedCodeBlocks.push(content);
+        console.log(`Found 4-space indented code block: "${content}"`);
+        return `__INDENTED_CODE_${index}__`;
+      });
+
+      // 일반 들여쓰기 처리 (1-3칸)
+      const indentedLines: {
+        original: string;
+        indent: string;
+        content: string;
+      }[] = [];
+      html = html.replace(/^([ ]{1,3})(.*)$/gm, (match, indent, content) => {
+        const index = indentedLines.length;
+        indentedLines.push({ original: match, indent, content });
+        console.log(`Found ${indent.length}-space indented line: "${content}"`);
+        return `__INDENTED_LINE_${index}__`;
+      });
+
       // 나머지 HTML 이스케이프
       html = escapeHtml(html);
 
@@ -934,11 +956,16 @@ export default function SimpleMarkdownRenderer({
         '<a href="$2" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors font-medium" target="_blank" rel="noopener noreferrer">$1</a>'
       );
 
-      // 이미지 처리 (모바일 최적화)
-      html = html.replace(
-        /!\[([^\]]*)\]\(([^)]+)\)/g,
-        '<div class="my-3 sm:my-4 -mx-3 sm:mx-0"><img src="$2" alt="$1" class="w-full h-auto rounded-lg shadow-lg" loading="lazy" style="max-width: 100%; height: auto;" /></div>'
-      );
+      // 이미지 처리 (모바일 최적화 개선)
+      const imageMatches = html.match(/!\[([^\]]*)\]\(([^)]+)\)/g);
+      if (imageMatches) {
+        console.log("Found images in markdown:", imageMatches);
+      }
+
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+        console.log("Processing image:", { alt, src, match });
+        return `<div class="my-4 w-full overflow-visible"><img src="${src}" alt="${alt}" class="w-full h-auto rounded-lg shadow-lg block" loading="lazy" style="max-width: 100%; height: auto; display: block !important; visibility: visible !important; opacity: 1 !important;" onload="console.log('✅ Image loaded successfully:', this.src, this.naturalWidth + 'x' + this.naturalHeight)" onerror="console.error('❌ Image failed to load:', this.src, this)" /></div>`;
+      });
 
       // 리스트 처리 (중복 방지)
       html = html.replace(
@@ -985,6 +1012,26 @@ export default function SimpleMarkdownRenderer({
         );
       });
 
+      // 4칸 들여쓰기 코드 블록 복원
+      indentedCodeBlocks.forEach((codeContent, index) => {
+        const highlightedContent = applyHighlightingFirst(codeContent, "");
+        html = html.replace(
+          `__INDENTED_CODE_${index}__`,
+          `<pre class="bg-gray-900 p-2 sm:p-4 rounded-lg my-3 sm:my-4 overflow-x-auto border border-gray-700"><code class="text-xs sm:text-sm font-mono leading-relaxed text-gray-300">${highlightedContent}</code></pre>`
+        );
+      });
+
+      // 일반 들여쓰기된 라인 복원
+      indentedLines.forEach((line, index) => {
+        const spaces = line.indent.length;
+        const indentStyle = `padding-left: ${spaces * 1.2}em; margin-left: 0;`;
+
+        html = html.replace(
+          `__INDENTED_LINE_${index}__`,
+          `<div class="whitespace-pre-wrap text-gray-300 leading-relaxed" style="${indentStyle}">${line.content}</div>`
+        );
+      });
+
       // 줄바꿈 처리
       html = html.replace(
         /\n\s*\n/g,
@@ -1000,6 +1047,15 @@ export default function SimpleMarkdownRenderer({
 
       // 빈 단락 제거
       html = html.replace(/<p[^>]*><\/p>/g, "");
+
+      // 최종 HTML에서 이미지 확인
+      const finalImages = html.match(/<img[^>]*>/g);
+      if (finalImages) {
+        console.log("Final HTML contains images:", finalImages.length);
+        console.log("Image tags:", finalImages);
+      } else {
+        console.log("No images found in final HTML");
+      }
 
       return html;
     } catch (error) {

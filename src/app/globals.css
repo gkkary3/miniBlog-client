@@ -399,6 +399,118 @@ body {
   border: 2px dashed rgba(59, 130, 246, 0.3) !important;
 }
 
+/* 모바일에서 마크다운 이미지 강제 표시 */
+@media (max-width: 768px) {
+  .markdown-body img,
+  .prose img {
+    display: block !important;
+    max-width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 16px 0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: relative !important;
+    z-index: 1 !important;
+    object-fit: cover !important;
+  }
+
+  .markdown-body img[src^="http"],
+  .markdown-body img[src^="https"],
+  .prose img[src^="http"],
+  .prose img[src^="https"] {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    min-height: 100px !important;
+  }
+
+  /* 이미지 로딩 실패 시 fallback */
+  .markdown-body img:not([src]),
+  .markdown-body img[src=""],
+  .prose img:not([src]),
+  .prose img[src=""] {
+    display: none !important;
+  }
+
+  /* 이미지 컨테이너 */
+  .markdown-body div:has(img),
+  .prose div:has(img) {
+    overflow: visible !important;
+    width: 100% !important;
+    margin: 16px 0 !important;
+    background-color: transparent !important;
+  }
+
+  /* 이미지 로딩 중 placeholder */
+  .markdown-body img[loading="lazy"],
+  .prose img[loading="lazy"] {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1) 25%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 75%
+    ) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.5s infinite !important;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* 들여쓰기 스타일 개선 */
+  .markdown-body .whitespace-pre-wrap,
+  .prose .whitespace-pre-wrap {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    font-family: inherit !important;
+    line-height: 1.6 !important;
+  }
+
+  /* 들여쓰기된 텍스트 */
+  .markdown-body div[style*="padding-left"],
+  .prose div[style*="padding-left"] {
+    position: relative !important;
+    border-left: 2px solid rgba(59, 130, 246, 0.2) !important;
+    background-color: rgba(59, 130, 246, 0.05) !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+    margin: 8px 0 !important;
+    border-radius: 0 4px 4px 0 !important;
+  }
+
+  /* 들여쓰기 코드 블록 스타일 */
+  .markdown-body pre:not(:has(code[class*="language-"])),
+  .prose pre:not(:has(code[class*="language-"])) {
+    background-color: rgba(31, 41, 55, 0.8) !important;
+    border: 1px solid rgba(75, 85, 99, 0.6) !important;
+    border-radius: 8px !important;
+    margin: 12px 0 !important;
+    position: relative !important;
+  }
+
+  .markdown-body pre:not(:has(code[class*="language-"]))::before,
+  .prose pre:not(:has(code[class*="language-"]))::before {
+    content: "코드" !important;
+    position: absolute !important;
+    top: 8px !important;
+    right: 12px !important;
+    font-size: 10px !important;
+    color: rgba(156, 163, 175, 0.7) !important;
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-family: monospace !important;
+  }
+}
+
 /* 이미지 로드 완료 시 스타일 */
 .w-md-editor-preview img[src^="http"]:loaded,
 .w-md-editor-preview img[src^="https"]:loaded {
