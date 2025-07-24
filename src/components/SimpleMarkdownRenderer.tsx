@@ -917,6 +917,20 @@ export default function SimpleMarkdownRenderer({
         return `__INDENTED_LINE_${index}__`;
       });
 
+      // 🆕 이미지 처리 (HTML 이스케이프 이전에!)
+      const imageMatches = html.match(/!\[([^\]]*)\]\(([^)]+)\)/g);
+      if (imageMatches) {
+        console.log("🖼️ Found images in markdown:", imageMatches);
+      }
+
+      const images: { alt: string; src: string }[] = [];
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
+        const index = images.length;
+        images.push({ alt, src });
+        console.log(`🖼️ Processing image ${index}:`, { alt, src, match });
+        return `__IMAGE_${index}__`;
+      });
+
       // 나머지 HTML 이스케이프
       html = escapeHtml(html);
 
@@ -956,15 +970,14 @@ export default function SimpleMarkdownRenderer({
         '<a href="$2" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors font-medium" target="_blank" rel="noopener noreferrer">$1</a>'
       );
 
-      // 이미지 처리 (모바일 최적화 개선)
-      const imageMatches = html.match(/!\[([^\]]*)\]\(([^)]+)\)/g);
-      if (imageMatches) {
-        console.log("Found images in markdown:", imageMatches);
-      }
-
-      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, src) => {
-        console.log("Processing image:", { alt, src, match });
-        return `<div class="my-4 w-full overflow-visible"><img src="${src}" alt="${alt}" class="w-full h-auto rounded-lg shadow-lg block" loading="lazy" style="max-width: 100%; height: auto; display: block !important; visibility: visible !important; opacity: 1 !important;" onload="console.log('✅ Image loaded successfully:', this.src, this.naturalWidth + 'x' + this.naturalHeight)" onerror="console.error('❌ Image failed to load:', this.src, this)" /></div>`;
+      // 이미지 복원 (HTML 이스케이프 후)
+      images.forEach((image, index) => {
+        const { alt, src } = image;
+        console.log(`✨ Restoring image ${index}:`, { alt, src });
+        html = html.replace(
+          `__IMAGE_${index}__`,
+          `<div class="my-4 w-full overflow-visible"><img src="${src}" alt="${alt}" class="w-full h-auto rounded-lg shadow-lg block" loading="lazy" style="max-width: 100%; height: auto; display: block !important; visibility: visible !important; opacity: 1 !important;" onload="console.log('✅ Image loaded successfully:', this.src, this.naturalWidth + 'x' + this.naturalHeight)" onerror="console.error('❌ Image failed to load:', this.src, this)" /></div>`
+        );
       });
 
       // 리스트 처리 (중복 방지)
