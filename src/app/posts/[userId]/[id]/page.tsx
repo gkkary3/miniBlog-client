@@ -25,6 +25,11 @@ export default function PostDetailPage({
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  // 🆕 낙관적 업데이트를 위한 상태
+  const [optimisticLiked, setOptimisticLiked] = useState<boolean | null>(null);
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState<number | null>(
+    null
+  );
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
@@ -63,7 +68,7 @@ export default function PostDetailPage({
     }
   }, [isAuthenticated]);
 
-  // 좋아요 처리 함수
+  // 좋아요 처리 함수 (낙관적 업데이트)
   const handleLike = async () => {
     if (!isAuthenticated) {
       const currentPath = window.location.pathname;
@@ -72,6 +77,19 @@ export default function PostDetailPage({
     }
 
     if (!currentUserId || !post) return;
+
+    // 🆕 낙관적 업데이트: 즉시 UI 변경
+    const originalLiked =
+      optimisticLiked !== null
+        ? optimisticLiked
+        : post.likedUsers.some((user) => user.id === currentUserId);
+    const originalCount =
+      optimisticLikeCount !== null
+        ? optimisticLikeCount
+        : post.likedUsers.length;
+
+    setOptimisticLiked(true);
+    setOptimisticLikeCount(originalCount + 1);
 
     try {
       const response = await useAuthStore
@@ -91,18 +109,25 @@ export default function PostDetailPage({
 
       if (!response.ok) throw new Error("Failed to like post");
 
-      // 게시글 데이터 다시 fetch
+      // 서버 응답 성공 시 실제 데이터로 업데이트
       const updatedResponse = await fetch(
         `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
+      // 낙관적 상태 초기화
+      setOptimisticLiked(null);
+      setOptimisticLikeCount(null);
     } catch (error) {
       console.error("Error liking post:", error);
+      // 🆕 실패 시 원래 상태로 롤백
+      setOptimisticLiked(originalLiked);
+      setOptimisticLikeCount(originalCount);
+      alert("좋아요 처리에 실패했습니다.");
     }
   };
 
-  // 좋아요 취소 함수
+  // 좋아요 취소 함수 (낙관적 업데이트)
   const handleUnlike = async () => {
     if (!isAuthenticated) {
       const currentPath = window.location.pathname;
@@ -110,6 +135,19 @@ export default function PostDetailPage({
       return;
     }
     if (!currentUserId || !post) return;
+
+    // 🆕 낙관적 업데이트: 즉시 UI 변경
+    const originalLiked =
+      optimisticLiked !== null
+        ? optimisticLiked
+        : post.likedUsers.some((user) => user.id === currentUserId);
+    const originalCount =
+      optimisticLikeCount !== null
+        ? optimisticLikeCount
+        : post.likedUsers.length;
+
+    setOptimisticLiked(false);
+    setOptimisticLikeCount(originalCount - 1);
 
     try {
       const response = await useAuthStore
@@ -129,14 +167,21 @@ export default function PostDetailPage({
 
       if (!response.ok) throw new Error("Failed to unlike post");
 
-      // 게시글 데이터 다시 fetch
+      // 서버 응답 성공 시 실제 데이터로 업데이트
       const updatedResponse = await fetch(
         `${API_URL}/posts/@${resolvedParams.userId}/${resolvedParams.id}`
       );
       const updatedPost = await updatedResponse.json();
       setPost(updatedPost);
+      // 낙관적 상태 초기화
+      setOptimisticLiked(null);
+      setOptimisticLikeCount(null);
     } catch (error) {
       console.error("Error unliking post:", error);
+      // 🆕 실패 시 원래 상태로 롤백
+      setOptimisticLiked(originalLiked);
+      setOptimisticLikeCount(originalCount);
+      alert("좋아요 취소에 실패했습니다.");
     }
   };
 
@@ -167,10 +212,17 @@ export default function PostDetailPage({
     }
   };
 
-  // 현재 사용자가 좋아요를 눌렀는지 확인 (null 체크 추가)
-  const isLiked = post?.likedUsers.some(
-    (likedUser) => likedUser.id === currentUserId
-  );
+  // 현재 사용자가 좋아요를 눌렀는지 확인 (낙관적 업데이트 반영)
+  const isLiked =
+    optimisticLiked !== null
+      ? optimisticLiked
+      : post?.likedUsers.some((likedUser) => likedUser.id === currentUserId);
+
+  // 좋아요 개수 (낙관적 업데이트 반영)
+  const likeCount =
+    optimisticLikeCount !== null
+      ? optimisticLikeCount
+      : post?.likedUsers.length || 0;
 
   if (loading) {
     return <PostDetailSkeleton />;
@@ -289,18 +341,30 @@ export default function PostDetailPage({
               {post.title}
             </h1>
 
-            {/* 좋아요 버튼 - 간단하게 */}
+            {/* 좋아요 버튼 - 개선된 hover 및 낙관적 업데이트 */}
             <div className="flex items-center space-x-4 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b border-gray-700">
               <button
                 onClick={isLiked ? handleUnlike : handleLike}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors text-sm ${
+                className={`group flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 text-sm transform hover:scale-105 ${
                   isLiked
-                    ? "text-red-400 hover:text-red-300"
-                    : "text-gray-400 hover:text-red-400"
+                    ? "text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40"
+                    : "text-gray-400 hover:text-red-400 bg-gray-800/50 hover:bg-red-500/10 border border-gray-600/30 hover:border-red-500/30"
                 }`}
+                disabled={
+                  optimisticLiked !== null || optimisticLikeCount !== null
+                }
               >
-                <span className="text-base">{isLiked ? "❤️" : "🤍"}</span>
-                <span>{post.likedUsers.length}</span>
+                <span
+                  className={`text-base transition-transform duration-300 ${
+                    isLiked ? "animate-pulse" : "group-hover:scale-110"
+                  }`}
+                >
+                  {isLiked ? "❤️" : "🤍"}
+                </span>
+                <span className="font-medium">{likeCount}</span>
+                <span className="text-xs opacity-70">
+                  {isLiked ? "좋아요 취소" : "좋아요"}
+                </span>
               </button>
             </div>
 

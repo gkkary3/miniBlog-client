@@ -28,7 +28,10 @@ export default function CommentItem({
   const [editContent, setEditContent] = useState(comment.content);
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState("");
-  const [showReplies, setShowReplies] = useState(false);
+  // 🆕 답글이 1개일 때는 기본적으로 보여주기
+  const [showReplies, setShowReplies] = useState(
+    comment.replies && comment.replies.length === 1
+  );
 
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
@@ -152,7 +155,7 @@ export default function CommentItem({
             />
           ) : (
             <div
-              className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:bg-gray-500 transition-colors"
+              className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg cursor-pointer hover:from-blue-400 hover:to-purple-500 transition-all duration-200 transform hover:scale-105"
               onClick={() => {
                 if (comment.user?.userId)
                   router.push(`/posts/${comment.user.userId}`);
@@ -168,10 +171,10 @@ export default function CommentItem({
 
         <div className="flex-1 min-w-0">
           {/* 헤더: 사용자명과 메타 정보 */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
+          <div className="flex items-start justify-between mb-3 gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1">
               <span
-                className="text-gray-200 font-semibold cursor-pointer hover:text-white transition-colors"
+                className="text-gray-200 font-semibold cursor-pointer hover:text-white transition-colors truncate"
                 onClick={() => {
                   if (comment.user?.userId)
                     router.push(`/posts/${comment.user.userId}`);
@@ -181,22 +184,22 @@ export default function CommentItem({
                   comment.username ||
                   `사용자${comment.userId}`}
               </span>
-              <span className="text-xs text-gray-400">
-                {formatDate(comment.createdAt)}
-              </span>
-              {comment.createdAt !== comment.updatedAt && (
-                <span className="text-xs text-gray-500">(수정됨)</span>
-              )}
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <span>{formatDate(comment.createdAt)}</span>
+                {comment.createdAt !== comment.updatedAt && (
+                  <span className="text-gray-500">(수정됨)</span>
+                )}
+              </div>
             </div>
 
-            {/* 수정/삭제 버튼 - 우측 상단 고정 */}
+            {/* 수정/삭제 버튼 - 모바일 최적화 */}
             {isAuthor && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 {!isEditing ? (
                   <>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap"
                       disabled={
                         updateMutation.isPending || deleteMutation.isPending
                       }
@@ -205,7 +208,7 @@ export default function CommentItem({
                     </button>
                     <button
                       onClick={handleDelete}
-                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap"
                       disabled={
                         updateMutation.isPending || deleteMutation.isPending
                       }
@@ -217,7 +220,7 @@ export default function CommentItem({
                   <>
                     <button
                       onClick={handleUpdate}
-                      className="text-xs text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full transition-colors"
+                      className="text-xs text-white bg-blue-600 hover:bg-blue-700 px-2 sm:px-3 py-1 rounded-full transition-colors whitespace-nowrap"
                       disabled={updateMutation.isPending}
                     >
                       {updateMutation.isPending ? "저장 중..." : "저장"}
@@ -227,7 +230,7 @@ export default function CommentItem({
                         setIsEditing(false);
                         setEditContent(comment.content);
                       }}
-                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full"
+                      className="text-xs text-gray-400 hover:text-white transition-colors bg-gray-700 hover:bg-gray-600 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap"
                       disabled={updateMutation.isPending}
                     >
                       취소
@@ -262,21 +265,27 @@ export default function CommentItem({
                 {canReply && (
                   <button
                     onClick={() => setIsReplying(!isReplying)}
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    className="text-xs text-gray-400 hover:text-white hover:bg-gray-700/50 px-3 py-1 rounded-full transition-all duration-200 transform hover:scale-105"
                     disabled={createMutation.isPending}
                   >
                     {isReplying ? "취소" : "답글"}
                   </button>
                 )}
 
-                {comment.replies && comment.replies.length > 0 && (
+                {/* 답글이 2개 이상일 때만 더보기/숨기기 버튼 표시 */}
+                {comment.replies && comment.replies.length >= 2 && (
                   <button
                     onClick={() => setShowReplies(!showReplies)}
-                    className="text-xs text-gray-400 hover:text-white hover:bg-gray-700/50 px-2 py-1 rounded transition-all"
+                    className="group text-xs text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 px-3 py-1 rounded-full transition-all duration-200 transform hover:scale-105 border border-transparent hover:border-blue-500/30"
                   >
-                    {showReplies
-                      ? "답글 숨기기"
-                      : `답글 ${comment.replies.length}개 더보기`}
+                    <span className="flex items-center gap-1">
+                      <span className="transition-transform duration-200 group-hover:rotate-12">
+                        {showReplies ? "👆" : "👇"}
+                      </span>
+                      {showReplies
+                        ? "답글 숨기기"
+                        : `답글 ${comment.replies.length}개 더보기`}
+                    </span>
                   </button>
                 )}
               </div>
