@@ -10,13 +10,128 @@ interface SimpleMarkdownRendererProps {
 
 // 구문 강조 우선 적용 함수 (HTML 이스케이프 이전에 처리)
 function applyHighlightingFirst(code: string, language: string): string {
-  // 언어 정규화
-  const normalizedLanguage = language.toLowerCase();
-  const isJavaScript =
-    normalizedLanguage === "js" ||
-    normalizedLanguage === "javascript" ||
-    normalizedLanguage === "ts" ||
-    normalizedLanguage === "typescript";
+  // 언어 별칭 매핑 및 정규화
+  const languageAliases: { [key: string]: string } = {
+    // JavaScript/TypeScript
+    js: "javascript",
+    javascript: "javascript",
+    ts: "typescript",
+    typescript: "typescript",
+    jsx: "javascript",
+    tsx: "typescript",
+    node: "javascript",
+    nodejs: "javascript",
+
+    // Python
+    py: "python",
+    python: "python",
+    python3: "python",
+    py3: "python",
+
+    // Shell/Bash
+    bash: "bash",
+    sh: "bash",
+    shell: "bash",
+    zsh: "bash",
+    fish: "bash",
+    powershell: "powershell",
+    ps1: "powershell",
+    cmd: "cmd",
+    batch: "cmd",
+    bat: "cmd",
+
+    // Web Technologies
+    html: "html",
+    htm: "html",
+    xml: "html",
+    css: "css",
+    scss: "css",
+    sass: "css",
+    less: "css",
+    stylus: "css",
+
+    // Data formats
+    json: "json",
+    yaml: "yaml",
+    yml: "yaml",
+    toml: "toml",
+    ini: "ini",
+    conf: "ini",
+    config: "ini",
+
+    // Programming Languages
+    java: "java",
+    c: "c",
+    cpp: "cpp",
+    "c++": "cpp",
+    cxx: "cpp",
+    cc: "cpp",
+    cs: "csharp",
+    csharp: "csharp",
+    "c#": "csharp",
+    php: "php",
+    ruby: "ruby",
+    rb: "ruby",
+    go: "go",
+    golang: "go",
+    rust: "rust",
+    rs: "rust",
+    swift: "swift",
+    kotlin: "kotlin",
+    kt: "kotlin",
+    scala: "scala",
+    r: "r",
+    matlab: "matlab",
+    m: "matlab",
+
+    // Database
+    sql: "sql",
+    mysql: "sql",
+    postgresql: "sql",
+    postgres: "sql",
+    sqlite: "sql",
+    mssql: "sql",
+
+    // Markup & Config
+    markdown: "markdown",
+    md: "markdown",
+    tex: "latex",
+    latex: "latex",
+
+    // Plain text
+    text: "text",
+    txt: "text",
+    plain: "text",
+    "": "text", // 언어가 지정되지 않은 경우
+  };
+
+  const normalizedLanguage =
+    languageAliases[language.toLowerCase()] || language.toLowerCase();
+
+  // 지원하는 언어들 (구문 강조 적용)
+  const supportedLanguages = [
+    "javascript",
+    "typescript",
+    "python",
+    "bash",
+    "powershell",
+    "cmd",
+    "html",
+    "css",
+    "json",
+    "sql",
+    "java",
+    "c",
+    "cpp",
+    "csharp",
+    "php",
+    "ruby",
+    "go",
+    "rust",
+    "swift",
+    "kotlin",
+    "scala",
+  ];
 
   // HTML 특수 문자 먼저 이스케이프
   const escapeHtml = (text: string) => {
@@ -25,35 +140,437 @@ function applyHighlightingFirst(code: string, language: string): string {
     return div.innerHTML;
   };
 
-  if (!isJavaScript) {
-    // JavaScript/TypeScript가 아닌 경우 기본 이스케이프만
+  if (!supportedLanguages.includes(normalizedLanguage)) {
+    // 지원하지 않는 언어는 기본 이스케이프만
     return escapeHtml(code);
   }
 
   try {
     let result = code;
 
-    // 1. 키워드 강조 (이스케이프 이전에 처리)
-    const keywords = [
-      "const",
-      "let",
-      "var",
-      "function",
-      "class",
-      "export",
-      "default",
-      "async",
-      "await",
-      "return",
-      "if",
-      "else",
-      "for",
-      "while",
-      "import",
-      "from",
-      "interface",
-      "type",
-    ];
+    // 1. 언어별 키워드 강조 (이스케이프 이전에 처리)
+    const getKeywords = () => {
+      const commonKeywords = [
+        // JavaScript/TypeScript
+        "const",
+        "let",
+        "var",
+        "function",
+        "class",
+        "export",
+        "default",
+        "async",
+        "await",
+        "return",
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "import",
+        "from",
+        "interface",
+        "type",
+        "enum",
+        "namespace",
+        "public",
+        "private",
+        "protected",
+        "static",
+        "readonly",
+        "abstract",
+        "extends",
+        "implements",
+        "super",
+        "this",
+        "new",
+        "delete",
+        "typeof",
+        "instanceof",
+        "in",
+        "of",
+        "try",
+        "catch",
+        "finally",
+        "throw",
+        "switch",
+        "case",
+        "break",
+        "continue",
+        "with",
+        "debugger",
+        "true",
+        "false",
+        "null",
+        "undefined",
+        "void",
+        "never",
+        "any",
+        "string",
+        "number",
+        "boolean",
+        "object",
+        "symbol",
+        "bigint",
+
+        // Python
+        "def",
+        "class",
+        "import",
+        "from",
+        "as",
+        "if",
+        "elif",
+        "else",
+        "for",
+        "while",
+        "in",
+        "not",
+        "and",
+        "or",
+        "is",
+        "lambda",
+        "try",
+        "except",
+        "finally",
+        "raise",
+        "with",
+        "yield",
+        "pass",
+        "break",
+        "continue",
+        "global",
+        "nonlocal",
+        "assert",
+        "del",
+        "True",
+        "False",
+        "None",
+        "self",
+        "cls",
+
+        // Java/C#
+        "public",
+        "private",
+        "protected",
+        "static",
+        "final",
+        "abstract",
+        "class",
+        "interface",
+        "extends",
+        "implements",
+        "package",
+        "import",
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "switch",
+        "case",
+        "default",
+        "try",
+        "catch",
+        "finally",
+        "throw",
+        "throws",
+        "new",
+        "this",
+        "super",
+        "return",
+        "break",
+        "continue",
+        "synchronized",
+        "volatile",
+        "transient",
+        "native",
+        "strictfp",
+        "void",
+        "int",
+        "double",
+        "float",
+        "long",
+        "short",
+        "byte",
+        "char",
+        "boolean",
+        "String",
+        "true",
+        "false",
+        "null",
+
+        // C/C++
+        "int",
+        "char",
+        "float",
+        "double",
+        "void",
+        "long",
+        "short",
+        "signed",
+        "unsigned",
+        "struct",
+        "union",
+        "enum",
+        "typedef",
+        "sizeof",
+        "const",
+        "volatile",
+        "extern",
+        "static",
+        "auto",
+        "register",
+        "inline",
+        "restrict",
+        "bool",
+        "true",
+        "false",
+        "NULL",
+
+        // Go
+        "package",
+        "import",
+        "func",
+        "var",
+        "const",
+        "type",
+        "struct",
+        "interface",
+        "map",
+        "chan",
+        "go",
+        "defer",
+        "select",
+        "range",
+        "fallthrough",
+        "goto",
+        "if",
+        "else",
+        "for",
+        "switch",
+        "case",
+        "default",
+        "break",
+        "continue",
+        "return",
+        "true",
+        "false",
+        "nil",
+
+        // Rust
+        "fn",
+        "let",
+        "mut",
+        "const",
+        "static",
+        "struct",
+        "enum",
+        "impl",
+        "trait",
+        "for",
+        "in",
+        "where",
+        "if",
+        "else",
+        "match",
+        "loop",
+        "while",
+        "break",
+        "continue",
+        "return",
+        "pub",
+        "mod",
+        "use",
+        "crate",
+        "super",
+        "self",
+        "Self",
+        "true",
+        "false",
+        "Some",
+        "None",
+
+        // Shell/Bash
+        "if",
+        "then",
+        "else",
+        "elif",
+        "fi",
+        "case",
+        "esac",
+        "for",
+        "while",
+        "until",
+        "do",
+        "done",
+        "function",
+        "return",
+        "break",
+        "continue",
+        "exit",
+        "export",
+        "local",
+        "readonly",
+        "declare",
+        "unset",
+        "shift",
+        "eval",
+        "exec",
+        "source",
+        "alias",
+        "unalias",
+        "echo",
+        "printf",
+        "read",
+        "test",
+        "true",
+        "false",
+
+        // SQL
+        "SELECT",
+        "FROM",
+        "WHERE",
+        "JOIN",
+        "INNER",
+        "LEFT",
+        "RIGHT",
+        "FULL",
+        "ON",
+        "GROUP",
+        "BY",
+        "HAVING",
+        "ORDER",
+        "ASC",
+        "DESC",
+        "INSERT",
+        "INTO",
+        "VALUES",
+        "UPDATE",
+        "SET",
+        "DELETE",
+        "CREATE",
+        "TABLE",
+        "ALTER",
+        "DROP",
+        "INDEX",
+        "VIEW",
+        "PROCEDURE",
+        "FUNCTION",
+        "TRIGGER",
+        "DATABASE",
+        "SCHEMA",
+        "CONSTRAINT",
+        "PRIMARY",
+        "FOREIGN",
+        "KEY",
+        "UNIQUE",
+        "NOT",
+        "NULL",
+        "DEFAULT",
+        "AUTO_INCREMENT",
+        "REFERENCES",
+
+        // CSS
+        "color",
+        "background",
+        "margin",
+        "padding",
+        "border",
+        "width",
+        "height",
+        "display",
+        "position",
+        "top",
+        "right",
+        "bottom",
+        "left",
+        "float",
+        "clear",
+        "overflow",
+        "visibility",
+        "z-index",
+        "opacity",
+        "cursor",
+        "font",
+        "text",
+        "line",
+        "letter",
+        "word",
+        "white",
+        "vertical",
+        "important",
+        "inherit",
+        "initial",
+        "unset",
+        "auto",
+        "none",
+        "block",
+        "inline",
+        "flex",
+        "grid",
+        "absolute",
+        "relative",
+        "fixed",
+        "sticky",
+
+        // HTML
+        "DOCTYPE",
+        "html",
+        "head",
+        "body",
+        "title",
+        "meta",
+        "link",
+        "script",
+        "style",
+        "div",
+        "span",
+        "p",
+        "a",
+        "img",
+        "ul",
+        "ol",
+        "li",
+        "table",
+        "tr",
+        "td",
+        "th",
+        "form",
+        "input",
+        "button",
+        "select",
+        "option",
+        "textarea",
+        "label",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "br",
+        "hr",
+        "strong",
+        "em",
+        "code",
+        "pre",
+        "blockquote",
+        "section",
+        "article",
+        "header",
+        "footer",
+        "nav",
+        "aside",
+        "main",
+        "figure",
+        "figcaption",
+      ];
+
+      return [...new Set(commonKeywords)]; // 중복 제거
+    };
+
+    const keywords = getKeywords();
 
     keywords.forEach((keyword) => {
       const regex = new RegExp(`\\b${keyword}\\b`, "g");
@@ -81,11 +598,80 @@ function applyHighlightingFirst(code: string, language: string): string {
       "__NUMBER_START__$1__NUMBER_END__"
     );
 
-    // 5. 연산자 강조 (더 많은 연산자 지원)
-    result = result.replace(
-      /(\s)(=|===|!==|==|!=|<=|>=|\+|-|\*|\/|%|\?|:)(\s)/g,
-      "$1__OPERATOR_START__$2__OPERATOR_END__$3"
-    );
+    // 5. 연산자 강조 (훨씬 더 많은 연산자 지원)
+    const operators = [
+      // 할당 연산자
+      "=",
+      "+=",
+      "-=",
+      "*=",
+      "/=",
+      "%=",
+      "**=",
+      "&=",
+      "|=",
+      "^=",
+      "<<=",
+      ">>=",
+      ">>>=",
+      // 비교 연산자
+      "===",
+      "!==",
+      "==",
+      "!=",
+      "<=",
+      ">=",
+      "<",
+      ">",
+      // 산술 연산자
+      "+",
+      "-",
+      "*",
+      "/",
+      "%",
+      "**",
+      // 논리 연산자
+      "&&",
+      "||",
+      "!",
+      // 비트 연산자
+      "&",
+      "|",
+      "^",
+      "~",
+      "<<",
+      ">>",
+      ">>>",
+      // 삼항 연산자
+      "?",
+      ":",
+      // 증감 연산자
+      "++",
+      "--",
+      // 기타
+      "=>",
+      "->",
+      "::",
+      "...",
+      "..",
+      "?.",
+      "??",
+      "??=",
+      "||=",
+      "&&=",
+    ];
+
+    // 긴 연산자부터 처리 (겹치는 경우 방지)
+    const sortedOperators = operators.sort((a, b) => b.length - a.length);
+
+    sortedOperators.forEach((op) => {
+      const escapedOp = op.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`(\\s|^)(${escapedOp})(\\s|$)`, "g");
+      result = result.replace(
+        regex,
+        "$1__OPERATOR_START__$2__OPERATOR_END__$3"
+      );
+    });
 
     // 6. 중괄호, 대괄호, 소괄호 강조
     result = result.replace(
@@ -93,12 +679,116 @@ function applyHighlightingFirst(code: string, language: string): string {
       "__BRACKET_START__$1__BRACKET_END__"
     );
 
-    // 7. 주석 강조
-    result = result.replace(/\/\/.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
-    result = result.replace(
-      /\/\*[\s\S]*?\*\//g,
-      "__COMMENT_START__$&__COMMENT_END__"
-    );
+    // 7. 언어별 특수 처리
+    // Shell/Bash 명령어 강조
+    if (
+      normalizedLanguage === "bash" ||
+      normalizedLanguage === "sh" ||
+      normalizedLanguage === "shell" ||
+      normalizedLanguage === "powershell" ||
+      normalizedLanguage === "cmd"
+    ) {
+      // 명령어 앞의 $ 또는 # 프롬프트
+      result = result.replace(
+        /^(\$|#)\s*/gm,
+        "__PROMPT_START__$1__PROMPT_END__ "
+      );
+      // 옵션 플래그 (-옵션, --옵션)
+      result = result.replace(
+        /(\s)(-{1,2}[a-zA-Z0-9-]+)/g,
+        "$1__FLAG_START__$2__FLAG_END__"
+      );
+      // 파이프 연산자
+      result = result.replace(
+        /(\s)(\|)(\s)/g,
+        "$1__PIPE_START__$2__PIPE_END__$3"
+      );
+      // 리다이렉션
+      result = result.replace(
+        /(\s)(>|>>|<|<<)(\s)/g,
+        "$1__REDIRECT_START__$2__REDIRECT_END__$3"
+      );
+    }
+
+    // Python 특수 처리
+    if (normalizedLanguage === "python" || normalizedLanguage === "py") {
+      // 데코레이터
+      result = result.replace(
+        /^(\s*)(@\w+)/gm,
+        "$1__DECORATOR_START__$2__DECORATOR_END__"
+      );
+      // f-string
+      result = result.replace(/(f["'])/g, "__FSTRING_START__$1__FSTRING_END__");
+    }
+
+    // SQL 특수 처리
+    if (normalizedLanguage === "sql") {
+      // 대소문자 구분 없이 키워드 처리를 위해 대문자로 변환
+      const sqlKeywords = [
+        "SELECT",
+        "FROM",
+        "WHERE",
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "CREATE",
+        "ALTER",
+        "DROP",
+      ];
+      sqlKeywords.forEach((keyword) => {
+        const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, "gi");
+        result = result.replace(
+          regex,
+          `__KEYWORD_START__${keyword}__KEYWORD_END__`
+        );
+      });
+    }
+
+    // 8. 주석 강조 (언어별)
+    if (normalizedLanguage === "python" || normalizedLanguage === "py") {
+      // Python 주석 (#)
+      result = result.replace(/#.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+      // Python 독스트링
+      result = result.replace(
+        /"""[\s\S]*?"""/g,
+        "__DOCSTRING_START__$&__DOCSTRING_END__"
+      );
+      result = result.replace(
+        /'''[\s\S]*?'''/g,
+        "__DOCSTRING_START__$&__DOCSTRING_END__"
+      );
+    } else if (
+      normalizedLanguage === "bash" ||
+      normalizedLanguage === "sh" ||
+      normalizedLanguage === "shell"
+    ) {
+      // Shell 주석 (#)
+      result = result.replace(/#.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+    } else if (normalizedLanguage === "sql") {
+      // SQL 주석 (-- 또는 #)
+      result = result.replace(/--.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+      result = result.replace(/#.*$/gm, "__COMMENT_START__$&__COMMENT_END__");
+      result = result.replace(
+        /\/\*[\s\S]*?\*\//g,
+        "__COMMENT_START__$&__COMMENT_END__"
+      );
+    } else if (normalizedLanguage === "css") {
+      // CSS 주석
+      result = result.replace(
+        /\/\*[\s\S]*?\*\//g,
+        "__COMMENT_START__$&__COMMENT_END__"
+      );
+    } else {
+      // JavaScript/TypeScript/Java/C/C++ 등의 주석
+      result = result.replace(
+        /\/\/.*$/gm,
+        "__COMMENT_START__$&__COMMENT_END__"
+      );
+      result = result.replace(
+        /\/\*[\s\S]*?\*\//g,
+        "__COMMENT_START__$&__COMMENT_END__"
+      );
+    }
 
     // 6. HTML 이스케이프 적용
     result = escapeHtml(result);
@@ -131,6 +821,35 @@ function applyHighlightingFirst(code: string, language: string): string {
     result = result.replace(
       /__BRACKET_START__(.*?)__BRACKET_END__/g,
       '<span class="text-yellow-400">$1</span>'
+    );
+    // 언어별 특수 요소 변환
+    result = result.replace(
+      /__PROMPT_START__(.*?)__PROMPT_END__/g,
+      '<span class="text-green-400 font-bold">$1</span>'
+    );
+    result = result.replace(
+      /__FLAG_START__(.*?)__FLAG_END__/g,
+      '<span class="text-blue-400">$1</span>'
+    );
+    result = result.replace(
+      /__PIPE_START__(.*?)__PIPE_END__/g,
+      '<span class="text-purple-400 font-bold">$1</span>'
+    );
+    result = result.replace(
+      /__REDIRECT_START__(.*?)__REDIRECT_END__/g,
+      '<span class="text-red-400 font-bold">$1</span>'
+    );
+    result = result.replace(
+      /__DECORATOR_START__(.*?)__DECORATOR_END__/g,
+      '<span class="text-yellow-400 font-semibold">$1</span>'
+    );
+    result = result.replace(
+      /__FSTRING_START__(.*?)__FSTRING_END__/g,
+      '<span class="text-green-400 font-semibold">$1</span>'
+    );
+    result = result.replace(
+      /__DOCSTRING_START__(.*?)__DOCSTRING_END__/g,
+      '<span class="text-green-300 italic">$1</span>'
     );
     result = result.replace(
       /__COMMENT_START__(.*?)__COMMENT_END__/g,
