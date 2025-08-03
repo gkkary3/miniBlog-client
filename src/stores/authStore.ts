@@ -177,12 +177,17 @@ export const useAuthStore = create<AuthStore>()(
 
           console.log("Access Token 갱신 중...");
 
+          const { accessToken } = get();
+
           const response = await fetch(`${API_URL}/auth/refresh`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${refreshToken}`,
             },
+            body: JSON.stringify({
+              accessToken: accessToken, // 만료된 accessToken도 함께 보냄
+            }),
           });
 
           if (!response.ok) {
