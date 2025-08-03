@@ -240,8 +240,13 @@ export const useAuthStore = create<AuthStore>()(
           if (response.status === 401) {
             console.log("토큰 만료 감지, 자동 갱신 시도...");
 
-            const newToken = await get().refreshAccessToken();
-            response = await makeRequest(newToken);
+            await get().refreshAccessToken();
+            // 갱신된 토큰을 다시 가져와서 사용
+            const { accessToken: updatedToken } = get();
+            if (!updatedToken) {
+              throw new Error("토큰 갱신 후에도 access token이 없습니다.");
+            }
+            response = await makeRequest(updatedToken);
           }
 
           return response;
