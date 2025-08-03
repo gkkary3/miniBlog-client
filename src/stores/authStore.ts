@@ -201,15 +201,10 @@ export const useAuthStore = create<AuthStore>()(
         } catch (error) {
           console.error("토큰 갱신 실패:", error);
 
-          // 서버에서 401 에러가 온 경우 refreshToken도 만료된 것으로 간주
-          if (error instanceof Error && error.message === "토큰 갱신 실패") {
-            console.log("Refresh token도 만료됨 - 자동 로그아웃 처리");
-            get().logout();
-          } else {
-            // 다른 에러의 경우 access token만 초기화
-            console.log("Access token 초기화");
-            get().clearTokens();
-          }
+          // 서버에서 401 에러가 온 경우에도 refreshToken은 유지
+          // 실제로는 서버 측 문제일 가능성이 높음
+          console.log("토큰 갱신 실패 - Access token만 초기화");
+          get().clearTokens();
 
           throw error;
         }
