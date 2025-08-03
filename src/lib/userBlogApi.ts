@@ -1,5 +1,5 @@
 import { UserPost, UserBlogData, CategoryStats, User } from "@/types/post";
-import { getAuthToken } from "./commentApi";
+import { useAuthStore } from "@/stores/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -243,20 +243,15 @@ export const updateUserInfo = async (
   userPk: number, // 고유 id (pk)
   data: { username: string; userId: string; profileImage?: string }
 ): Promise<unknown> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("사용자 정보 수정을 위해 로그인이 필요합니다.");
-  }
-
-  const response = await fetch(`${API_URL}/user/${userPk}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await useAuthStore
+    .getState()
+    .authenticatedFetch(`${API_URL}/user/${userPk}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
 
   if (!response.ok) {
     throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);

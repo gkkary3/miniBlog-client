@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../Modal";
 import UserListItem from "./UserListItem";
-import { getAuthToken } from "@/lib/commentApi";
+import { useAuthStore } from "@/stores/authStore";
 
 interface FollowUser {
   id: number;
@@ -72,14 +72,14 @@ const FollowListModal: React.FC<FollowListModalProps> = ({
     try {
       const method = willFollow ? "POST" : "DELETE";
 
-      const token = getAuthToken();
-      const res = await fetch(`${API_URL}/user/@${targetUserId}/follow`, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await useAuthStore
+        .getState()
+        .authenticatedFetch(`${API_URL}/user/@${targetUserId}/follow`, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
       if (!res.ok) throw new Error("팔로우 상태 변경에 실패했습니다.");
 

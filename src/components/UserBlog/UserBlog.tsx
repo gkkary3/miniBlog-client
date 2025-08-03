@@ -6,7 +6,7 @@ import { useUserBlogInfinite } from "@/hooks/useUserBlogInfinite";
 import CategorySidebar from "@/components/UserBlog/CategorySidebar";
 import PostList from "@/components/UserBlog/PostList";
 import FollowListModal from "@/components/UserBlog/FollowListModal";
-import { getAuthToken } from "@/lib/commentApi";
+import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { UserBlogSkeleton } from "@/components/Skeleton";
@@ -82,14 +82,14 @@ export default function UserBlog({ userId }: { userId: string }) {
     }
     setIsFollowLoading(true);
     try {
-      const token = getAuthToken();
-      const res = await fetch(`${API_URL}/user/@${userId}/follow`, {
-        method: isFollowing ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await useAuthStore
+        .getState()
+        .authenticatedFetch(`${API_URL}/user/@${userId}/follow`, {
+          method: isFollowing ? "DELETE" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
       if (!res.ok) throw new Error("팔로우 상태 변경에 실패했습니다.");
       setIsFollowing(!isFollowing);
     } catch (err) {

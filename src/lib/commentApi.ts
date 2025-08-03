@@ -3,16 +3,9 @@ import {
   CreateCommentRequest,
   UpdateCommentRequest,
 } from "@/types/comment";
+import { useAuthStore } from "@/stores/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-// 🔑 토큰 가져오기 헬퍼 (작성/수정/삭제용)
-export const getAuthToken = () => {
-  if (typeof window === "undefined") return null;
-  const authData = localStorage.getItem("auth-storage");
-  if (!authData) return null;
-  return JSON.parse(authData)?.state?.accessToken;
-};
 
 // 💬 댓글 목록 조회 (토큰 불필요!)
 export const fetchComments = async (
@@ -107,28 +100,20 @@ export const createComment = async (
   postId: string,
   data: CreateCommentRequest
 ): Promise<Comment> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("댓글 작성을 위해 로그인이 필요합니다.");
-  }
-
   console.log(
     `댓글 작성 요청: ${API_URL}/posts/@${userId}/${postId}/comments`,
     data
   );
 
-  const response = await fetch(
-    `${API_URL}/posts/@${userId}/${postId}/comments`,
-    {
+  const response = await useAuthStore
+    .getState()
+    .authenticatedFetch(`${API_URL}/posts/@${userId}/${postId}/comments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
-    }
-  );
+    });
 
   if (!response.ok) {
     throw new Error(
@@ -148,28 +133,23 @@ export const updateComment = async (
   commentId: string,
   data: UpdateCommentRequest
 ): Promise<Comment> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("댓글 수정을 위해 로그인이 필요합니다.");
-  }
-
   console.log(
     `댓글 수정 요청: ${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
     data
   );
 
-  const response = await fetch(
-    `${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    }
-  );
+  const response = await useAuthStore
+    .getState()
+    .authenticatedFetch(
+      `${API_URL}/posts/@${userId}/${postId}/comments/${commentId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
 
   if (!response.ok) {
     throw new Error(
@@ -184,20 +164,13 @@ export const updateComment = async (
 
 // 🗑️ 댓글 삭제 (토큰 필요)
 export const deleteComment = async (commentId: string): Promise<void> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("댓글 삭제를 위해 로그인이 필요합니다.");
-  }
-
   console.log(`댓글 삭제 요청: ${API_URL}/comment/${commentId}`);
 
-  const response = await fetch(`${API_URL}/comment/${commentId}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await useAuthStore
+    .getState()
+    .authenticatedFetch(`${API_URL}/comment/${commentId}`, {
+      method: "DELETE",
+    });
 
   if (!response.ok) {
     throw new Error(

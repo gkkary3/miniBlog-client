@@ -201,7 +201,10 @@ export const useAuthStore = create<AuthStore>()(
             accessToken: data.accessToken,
           });
 
-          console.log("토큰 갱신 성공");
+          console.log(
+            "토큰 갱신 성공 - 새 토큰:",
+            data.accessToken.substring(0, 20) + "..."
+          );
           return data.accessToken;
         } catch (error) {
           console.error("토큰 갱신 실패:", error);
@@ -242,11 +245,15 @@ export const useAuthStore = create<AuthStore>()(
 
             await get().refreshAccessToken();
             // 갱신된 토큰을 다시 가져와서 사용
-            const { accessToken: updatedToken } = get();
-            if (!updatedToken) {
+            const { accessToken } = get();
+            if (!accessToken) {
               throw new Error("토큰 갱신 후에도 access token이 없습니다.");
             }
-            response = await makeRequest(updatedToken);
+            console.log(
+              "새로운 토큰으로 재시도:",
+              accessToken.substring(0, 20) + "..."
+            );
+            response = await makeRequest(accessToken);
           }
 
           return response;
