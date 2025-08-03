@@ -18,6 +18,7 @@ interface AuthStore {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  clearTokens: () => void;
   setLoading: (loading: boolean) => void;
   fetchUserInfo: () => Promise<void>;
   forceUserUpdate: () => void;
@@ -153,6 +154,14 @@ export const useAuthStore = create<AuthStore>()(
         });
       },
 
+      // 토큰만 초기화하는 함수 (refreshToken은 유지)
+      clearTokens: () => {
+        set({
+          accessToken: null,
+          isAuthenticated: false,
+        });
+      },
+
       // 로딩 상태 설정
       setLoading: (loading: boolean) => {
         set({ loading });
@@ -191,9 +200,17 @@ export const useAuthStore = create<AuthStore>()(
           return data.accessToken;
         } catch (error) {
           console.error("토큰 갱신 실패:", error);
-          // Refresh token도 만료된 경우 자동 로그아웃
-          console.log("자동 로그아웃 처리");
-          get().logout();
+
+          // 서버에서 401 에러가 온 경우 refreshToken도 만료된 것으로 간주
+          if (error instanceof Error && error.message === "토큰 갱신 실패") {
+            console.log("Refresh token도 만료됨 - 자동 로그아웃 처리");
+            get().logout();
+          } else {
+            // 다른 에러의 경우 access token만 초기화
+            console.log("Access token 초기화");
+            get().clearTokens();
+          }
+
           throw error;
         }
       },
