@@ -442,6 +442,25 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: true,
         });
 
+        // Zustand persist가 localStorage에 저장될 때까지 기다림
+        await new Promise((resolve) => {
+          const checkStorage = () => {
+            const authData = localStorage.getItem("auth-storage");
+            if (authData) {
+              const parsed = JSON.parse(authData);
+              if (
+                parsed.state?.accessToken === accessToken &&
+                parsed.state?.refreshToken === refreshToken
+              ) {
+                resolve(undefined);
+                return;
+              }
+            }
+            setTimeout(checkStorage, 10);
+          };
+          checkStorage();
+        });
+
         await get().fetchUserInfo();
 
         // URL에서 민감정보 제거

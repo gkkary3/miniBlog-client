@@ -45,6 +45,12 @@ function OAuthCallbackContent() {
         // 실제 파싱 및 set은 handleOAuthCallback에서!
         await handleOAuthCallback();
 
+        // localStorage에 토큰이 저장되었는지 한번 더 확인
+        const authData = localStorage.getItem("auth-storage");
+        if (!authData) {
+          throw new Error("토큰 저장에 실패했습니다.");
+        }
+
         // 성공 시 바로 메인 페이지로 리다이렉트 (메시지 없이)
         router.replace("/posts");
       } catch (error) {
