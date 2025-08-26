@@ -51,6 +51,17 @@ function OAuthCallbackContent() {
           throw new Error("토큰 저장에 실패했습니다.");
         }
 
+        // 저장된 토큰 확인
+        try {
+          const parsed = JSON.parse(authData);
+          if (!parsed.state?.accessToken || !parsed.state?.refreshToken) {
+            throw new Error("토큰이 제대로 저장되지 않았습니다.");
+          }
+          console.log("토큰 저장 확인 완료");
+        } catch (e) {
+          throw new Error("저장된 토큰을 확인할 수 없습니다.");
+        }
+
         // 성공 시 바로 메인 페이지로 리다이렉트 (메시지 없이)
         router.replace("/posts");
       } catch (error) {

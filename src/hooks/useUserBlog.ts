@@ -9,7 +9,7 @@ export const userBlogKeys = {
   list: (userId: string) => [...userBlogKeys.lists(), userId] as const,
 };
 
-// 🏠 사용자 블로그 전체 데이터 조회
+// 사용자 블로그 전체 데이터 조회
 export const useUserBlog = (userId: string) => {
   return useQuery({
     queryKey: userBlogKeys.list(userId),
@@ -21,7 +21,7 @@ export const useUserBlog = (userId: string) => {
   });
 };
 
-// 📝 사용자 게시글만 가져오는 hook (derived data)
+// 사용자 게시글만 가져오는 hook (derived data)
 export const useUserPosts = (userId: string) => {
   const { data, ...rest } = useUserBlog(userId);
 
@@ -34,7 +34,7 @@ export const useUserPosts = (userId: string) => {
   };
 };
 
-// 🏷️ 사용자 카테고리만 가져오는 hook (derived data)
+// 사용자 카테고리만 가져오는 hook (derived data)
 export const useUserCategories = (userId: string) => {
   const { data, ...rest } = useUserBlog(userId);
 
@@ -46,7 +46,7 @@ export const useUserCategories = (userId: string) => {
   };
 };
 
-// 🔍 특정 카테고리의 게시글만 필터링하는 hook
+// 특정 카테고리의 게시글만 필터링하는 hook
 export const usePostsByCategory = (userId: string, categoryName?: string) => {
   const { data: blogData, ...rest } = useUserBlog(userId);
 
@@ -67,7 +67,7 @@ export const usePostsByCategory = (userId: string, categoryName?: string) => {
   };
 };
 
-// 📊 카테고리 통계 헬퍼 hook
+// 카테고리 통계 헬퍼 hook
 export const useCategoryStats = (userId: string) => {
   const { data, ...rest } = useUserBlog(userId);
 
