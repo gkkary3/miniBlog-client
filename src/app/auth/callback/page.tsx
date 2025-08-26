@@ -58,7 +58,7 @@ function OAuthCallbackContent() {
             throw new Error("토큰이 제대로 저장되지 않았습니다.");
           }
           console.log("토큰 저장 확인 완료");
-        } catch (e) {
+        } catch {
           throw new Error("저장된 토큰을 확인할 수 없습니다.");
         }
 
