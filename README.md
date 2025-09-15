@@ -131,7 +131,3 @@ authenticatedFetch: async (url: string, options: RequestInit = {}) => {
 ## 향후 개선사항
 
 - 실시간 알림 시스템 (WebSocket)
-- 이미지 업로드 및 최적화
-- 검색 기능 고도화
-- PWA 기능 추가
-- 성능 최적화 (Code Splitting, 이미지 최적화)
